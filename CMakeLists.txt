@@ -13,7 +13,7 @@ set(${PROJECT_NAME}_SOVERSION ${${PROJECT_NAME}_MAJOR_VERSION}.${${PROJECT_NAME}
 #Moderate version of the compiler flags
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -fPIC -Wextra -ansi -Wuninitialized")
 
-find_package(Matlaba)
+find_package(Matlab)
 
 if(MATLAB_FOUND)
     message(STATUS "MATLAB Found, MATLAB MEX will be compiled.")

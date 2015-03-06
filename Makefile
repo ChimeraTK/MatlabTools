@@ -1,38 +1,46 @@
-CFLAGS=$$CFLAGS -Wall -Wextra -Wshadow -pedantic -Wuninitialized -std=c++0x
-CXXFLAGS=$$CXXFLAGS -Wall -Wextra -Wshadow -pedantic -Wuninitialized -std=c++0x
-LDFLAGS=$$LDFLAGS -w -std=c++0x
+CFLAGS = $$CFLAGS -Wall -Wextra -Wshadow -pedantic -Wuninitialized -std=c++0x
+CXXFLAGS = $$CXXFLAGS -Wall -Wextra -Wshadow -pedantic -Wuninitialized -std=c++0x
+LDFLAGS = $$LDFLAGS -w -std=c++0x
 
-#MTCA_INCLUDE_FLAG = -I/home/mheuer/mtca4u/mtca4u_MappedDevice/include/ 
-#MTCA_LIB_FLAG = -L/home/mheuer/mtca4u/mtca4u_MappedDevice/lib/
+MTCA4U_MATLAB_VERSION=0.1.0
 
-MTCA_INCLUDE_FLAG = -I/usr/include/mtca4u/
-MTCA_LIB_FLAG = -L/usr/lib/mtca4u/
+#Set the correct parameters for the MTCA4U include
+#You can change the path to MTCA4U.CONFIG if you want to use a custom installation
+include /usr/share/mtca4u/MTCA4U.CONFIG
+
+MTCA4U_MEX_FLAGS = $(MtcaMappedDevice_INCLUDE_FLAGS)\
+                   $(MtcaMappedDevice_LIB_FLAGS) $(MtcaMappedDevice_RUNPATH_FLAGS)
 
 DIR = $(CURDIR)
 
 
 all:
-	mex CFLAGS='$(CFLAGS)' CXXFLAGS='$(CXXFLAGS)' LDFLAGS='$(LDFLAGS)' -I./include $(MTCA_INCLUDE_FLAG) $(MTCA_LIB_FLAG) -lMtcaMappedDevice -outdir bin ./src/mtca4u_mex.cpp
-#	mex CFLAGS='$(CFLAGS)' CXXFLAGS='$(CXXFLAGS)' LDFLAGS='$(LDFLAGS)' -I./include $(MTCA_INCLUDE_FLAG) $(MTCA_LIB_FLAG) -lMtcaMappedDevice -lMotorDriverCard -outdir bin ./src/mtca4u_dmc2.cpp
-#	cp -r ./matlab/* ./bin/	
-#	echo g++ -L/usr/lib $(MTCA_INCLUDE_FLAG) $(MTCA_LIB_FLAG) -lMtcaMappedDevice -o ./unit_test/test.out
+#use a similar naming scheme as normal .so files with version number and symlink
+#FIXME What to do about the extension? This is hard coded for intel 64 bit
+	echo CXXFLAGS=$(CXXFLAGS)
+	mex CFLAGS='$(CFLAGS)' CXXFLAGS='$(CXXFLAGS)' LDFLAGS='$(LDFLAGS)' -I./include $(MTCA4U_MEX_FLAGS)\
+	  -outdir bin -output mtca4u_mex.$(MTCA4U_MATLAB_VERSION) ./src/mtca4u_mex.cpp
+	ln -sf bin/mtca4u_mex.$(MTCA4U_MATLAB_VERSION).mexa64 bin/mtca4u_mex.mexa64
 
 #debug:
 #	mex -v CFLAGS='$$CFLAGS' CXXFLAGS='$$CXXFLAGS' LDFLAGS='$$LDFLAGS' $(MTCA_INCLUDE_FLAG) $(MTCA_LIB_FLAG) -lMtcaMappedDevice -outdir bin ./src/mtca4u.cpp -D__MEX_DEBUG_MODE
-	
+
 .PHONY: clean install install_local test 
-	
+
 clean:	
 	rm -rf ./bin
 
-install:
+#this will fail at the moment. At least $DIR is empty and setup.m is not in bin
+install: all
 	cd ~ && matlab -nojvm -r "cd $(DIR)/bin, run setup.m, savepath ~/pathdef.m, exit"
 	@echo "Path saved in ~/pathdef.m" 
 
-install_local:
-	cp ./bin/mtca4u_mex.mexa64 /usr/lib/mtca4u_mex.mexa64
-	cp ./bin/mtca4u.m /usr/lib/mtca4u.m
+install_local: all
+	cp bin/mtca4u_mex.mexa64 bin/mtca4u_mex.$(MTCA4U_MATLAB_VERSION).mexa64 matlab/mtca4u.m /usr/lib
+
+system_install: all
+	cp bin/mtca4u_mex.mexa64 matlab/mtca4u.m /local/lib
 
 #test:
 #	matlab -nojvm -r "try run('./unit_test/run_test.m'), catch ex, disp(ex.message); exit; end, exit"
-	
+
