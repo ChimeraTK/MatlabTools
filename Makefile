@@ -28,7 +28,7 @@ all:
 .PHONY: clean install install_local test 
 
 clean:	
-	rm -rf ./bin
+	rm -rf ./bin debian_from_template debian_package
 
 #this will fail at the moment. At least $DIR is empty and setup.m is not in bin
 install: all
@@ -40,6 +40,18 @@ install_local: all
 
 system_install: all
 	cp bin/mtca4u_mex.mexa64 matlab/mtca4u.m /local/lib
+
+#A target which replaces the version number in the control files for the debian packaging
+configure-package-files:
+	test -d debian_from_template || mkdir debian_from_template
+	cat debian.in/copyright.in | sed "{s/@MTCA4U_MATLAB_VERSION@/${MTCA4U_MATLAB_VERSION}/}" > debian_from_template/copyright
+	cp debian.in/compat debian.in/install debian.in/rules debian_from_template/
+	#this one copies the control file and sets the maintainer name
+	./setMaintainerName.sh
+
+#This target will only succeed on debian machines with the debian packaging tools installed
+debian_package: configure-package-files
+	./make_debian_package.sh ${MTCA4U_MATLAB_VERSION}
 
 #test:
 #	matlab -nojvm -r "try run('./unit_test/run_test.m'), catch ex, disp(ex.message); exit; end, exit"
