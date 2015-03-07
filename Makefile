@@ -20,7 +20,7 @@ all:
 	echo CXXFLAGS=$(CXXFLAGS)
 	mex CFLAGS='$(CFLAGS)' CXXFLAGS='$(CXXFLAGS)' LDFLAGS='$(LDFLAGS)' -I./include $(MTCA4U_MEX_FLAGS)\
 	  -outdir bin -output mtca4u_mex.$(MTCA4U_MATLAB_VERSION) ./src/mtca4u_mex.cpp
-	ln -sf bin/mtca4u_mex.$(MTCA4U_MATLAB_VERSION).mexa64 bin/mtca4u_mex.mexa64
+	(cd bin; ln -sf mtca4u_mex.$(MTCA4U_MATLAB_VERSION).mexa64 mtca4u_mex.mexa64)
 
 #debug:
 #	mex -v CFLAGS='$$CFLAGS' CXXFLAGS='$$CXXFLAGS' LDFLAGS='$$LDFLAGS' $(MTCA_INCLUDE_FLAG) $(MTCA_LIB_FLAG) -lMtcaMappedDevice -outdir bin ./src/mtca4u.cpp -D__MEX_DEBUG_MODE
@@ -35,11 +35,8 @@ install: all
 	cd ~ && matlab -nojvm -r "cd $(DIR)/bin, run setup.m, savepath ~/pathdef.m, exit"
 	@echo "Path saved in ~/pathdef.m" 
 
-install_local: all
-	cp bin/mtca4u_mex.mexa64 bin/mtca4u_mex.$(MTCA4U_MATLAB_VERSION).mexa64 matlab/mtca4u.m /usr/lib
-
 system_install: all
-	cp bin/mtca4u_mex.mexa64 matlab/mtca4u.m /local/lib
+	cp --preserve=links bin/mtca4u_mex.mexa64 bin/mtca4u_mex.$(MTCA4U_MATLAB_VERSION).mexa64 matlab/mtca4u.m /local/lib
 
 #A target which replaces the version number in the control files for the debian packaging
 configure-package-files:

@@ -3,5 +3,5 @@
 %:
 	dh $@
 
-install:
+override_dh_auto_install:
 	make system_install
