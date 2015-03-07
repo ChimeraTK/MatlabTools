@@ -14,7 +14,9 @@ MTCA4U_MEX_FLAGS = $(MtcaMappedDevice_INCLUDE_FLAGS)\
 DIR = $(CURDIR)
 
 
-all:
+all: bin/mtca4u_mex.$(MTCA4U_MATLAB_VERSION).mexa64
+
+bin/mtca4u_mex.$(MTCA4U_MATLAB_VERSION).mexa64: src/mtca4u_mex.cpp
 #use a similar naming scheme as normal .so files with version number and symlink
 #FIXME What to do about the extension? This is hard coded for intel 64 bit
 	echo CXXFLAGS=$(CXXFLAGS)
