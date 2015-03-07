@@ -36,6 +36,7 @@ install: all
 	@echo "Path saved in ~/pathdef.m" 
 
 system_install: all
+	test -d /local/lib || mkdir -p /local/lib
 	cp --preserve=links bin/mtca4u_mex.mexa64 bin/mtca4u_mex.$(MTCA4U_MATLAB_VERSION).mexa64 matlab/mtca4u.m /local/lib
 
 #A target which replaces the version number in the control files for the debian packaging
