@@ -3,5 +3,8 @@
 %:
 	dh $@
 
+# Deactivate the auto install target
+# This is needed because 'make install' does something else.
+# The installation is done using the debian/install file.
 override_dh_auto_install:
-	make system_install
+	:

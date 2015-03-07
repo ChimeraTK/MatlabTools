@@ -1,13 +1,13 @@
-Source: gpcieuni-dkms
-Section: contrib/kernel
+Source: mtca4u-matlab-tools
+Section: utils
 Priority: extra
 Maintainer: __USER_NAME__ <__EMAIL_ADDRESS__>
 Build-Depends: debhelper (>= 7), dev-mtcamappeddevice (>= 0.13.00)
 #FIXME: The dependency on Matlab is missing, could not figure out the package
 Standards-Version: 3.8.1
-Section: utils
 
 Package: mtca4u-matlab-tools
+Section: utils
 Architecture: all
 Depends: ${shlibs:Depends}, ${misc:Depends}
 Description: Matlab bindings for MtcaMappedDevice

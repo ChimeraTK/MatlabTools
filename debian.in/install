@@ -1,1 +1,2 @@
-local/lib/*
+bin/* local/lib/
+matlab/mtca4u.m local/lib/
