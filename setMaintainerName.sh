@@ -1,7 +1,10 @@
 #!/bin/bash
 
-#set the variables name and email to USER and USER@HOST if they are not set
-: ${NAME:=${USER}}
+# Extract the full user name from the passwd file
+FULL_USER_NAME=`getent passwd ${USER} | cut -d ':' -f 5 | cut -d ',' -f 1`
+
+#set the variables name and email to FULL_USER_NAME and USER@HOST if they are not set
+: ${NAME:=${FULL_USER_NAME}}
 : ${EMAIL:=$USER"@"$HOST}
 
 echo "NAME is "${NAME}
