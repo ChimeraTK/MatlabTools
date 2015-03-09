@@ -2,7 +2,7 @@ CFLAGS = $$CFLAGS -Wall -Wextra -Wshadow -pedantic -Wuninitialized -std=c++0x
 CXXFLAGS = $$CXXFLAGS -Wall -Wextra -Wshadow -pedantic -Wuninitialized -std=c++0x
 LDFLAGS = $$LDFLAGS -w -std=c++0x
 
-MTCA4U_MATLAB_VERSION=0.1.0
+MTCA4U_MATLAB_VERSION=00.01.00
 
 #Set the correct parameters for the MTCA4U include
 #You can change the path to MTCA4U.CONFIG if you want to use a custom installation
