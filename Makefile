@@ -2,7 +2,7 @@ CFLAGS = $$CFLAGS -Wall -Wextra -Wshadow -pedantic -Wuninitialized -std=c++0x
 CXXFLAGS = $$CXXFLAGS -Wall -Wextra -Wshadow -pedantic -Wuninitialized -std=c++0x
 LDFLAGS = $$LDFLAGS -w -std=c++0x
 
-MTCA4U_MATLAB_VERSION=00.01.00
+MTCA4U_MATLAB_VERSION=00.01.01
 
 #Set the correct parameters for the MTCA4U include
 #You can change the path to MTCA4U.CONFIG if you want to use a custom installation
@@ -48,6 +48,9 @@ configure-package-files:
 	cp debian.in/compat debian.in/install debian.in/rules debian_from_template/
 	#this one copies the control file and sets the maintainer name
 	./setMaintainerName.sh
+	cat debian.in/create_mex_deps.sh.in | sed "{s/@MTCA4U_MATLAB_VERSION@/${MTCA4U_MATLAB_VERSION}/}" > debian_from_template/create_mex_deps.sh
+	chmod +x debian_from_template/create_mex_deps.sh
+
 
 #This target will only succeed on debian machines with the debian packaging tools installed
 debian_package: configure-package-files

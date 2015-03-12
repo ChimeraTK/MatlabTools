@@ -9,5 +9,5 @@ Standards-Version: 3.8.1
 Package: mtca4u-matlab-tools
 Section: utils
 Architecture: all
-Depends: ${shlibs:Depends}, ${misc:Depends}
+Depends: ${mex:Depends}, ${misc:Depends}
 Description: Matlab bindings for MtcaMappedDevice

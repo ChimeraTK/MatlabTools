@@ -1,0 +1,11 @@
+#!/bin/bash
+
+#determine the libMtcaMappedDevice the mex is linked with, incl. version
+MAPPED_DEVICE_LIB=`ldd mtca4u-matlab-tools/local/lib/mtca4u_mex.@MTCA4U_MATLAB_VERSION@.mexa64\
+     | grep "MtcaMappedDevice" | sed "{s|^.*=> ||}" | sed "{s| (.*$||}"`
+
+#get the package name which provides the MAPPED_DEVICE_LIB\
+MAPPED_DEVICE_PACKAGE=`dpkg -S ${MAPPED_DEVICE_LIB} | sed "{s|:.*$||}"`
+
+#add the dependency to the substvars file
+echo mex:Depends=${MAPPED_DEVICE_PACKAGE} >> mtca4u-matlab-tools.substvars 

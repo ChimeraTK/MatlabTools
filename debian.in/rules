@@ -8,3 +8,7 @@
 # The installation is done using the debian/install file.
 override_dh_auto_install:
 	:
+
+override_dh_installinit:
+	(cd debian; ./create_mex_deps.sh)
+	dh_installinit
