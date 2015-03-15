@@ -134,10 +134,10 @@ classdef mtca4u
         %mtca4u.read_dma_raw - Reads data from a board using direct memory access
         %
         % Syntax:
-        %    [data] = mtca4u.read_dma_raw(board, register)
-        %    [data] = mtca4u.read_dma_raw(board, register, sample, offset)
-        %    [data] = mtca4u.read_dma_raw(board, register, sample, offset, mode)
-        %    [data] = mtca4u.read_dma_raw(board, register, sample, offset, mode, singed, bit, fracbit)
+        %    [data] = mtca4u.read_dma_raw(board, area)
+        %    [data] = mtca4u.read_dma_raw(board, area, sample, offset)
+        %    [data] = mtca4u.read_dma_raw(board, area, sample, offset, mode)
+        %    [data] = mtca4u.read_dma_raw(board, area, sample, offset, mode, singed, bit, fracbit)
         %    ...
         %
         % Inputs:
@@ -165,19 +165,21 @@ classdef mtca4u
         %mtca4u.read_dma - Reads data from a board using direct memory access
         %             
         % Syntax:
-        %    [data] = mtca4u.read_dma(board)
-        %    [data] = mtca4u.read_dma(board, register, channel, sample)
-        %    [data] = mtca4u.read_dma(board, register, channel, sample, mode)
-        %    [data] = mtca4u.read_dma(board, register, channel, sample, mode, signed, bit, fracbit)
-        %    [channel1, channel2, ...] = mtca4u.read_dma(board, register, [1, 2 ...], sample)
-        %    [channel1, channel2, ...] = mtca4u.read_dma(board, register, [1, 2 ...], sample, mode, signed, bit, fracbit)
+        %    [data] = mtca4u.read_dma(board, area, channel)
+        %    [data] = mtca4u.read_dma(board, area, channel, sample, offset)
+        %    [data] = mtca4u.read_dma(board, area, channel, sample, offset, channels, mode)
+        %    [data] = mtca4u.read_dma(board, area, channel, sample, offset, channels, mode, signed, bit, fracbit)
+        %    [channel1, channel2, ...] = mtca4u.read_dma(board, area, [1, 2 ...], sample, offset)
+        %    [channel1, channel2, ...] = mtca4u.read_dma(board, area, [1, 2 ...], sample, offset, channels, mode, signed, bit, fracbit)
         %    ...
         %
         % Inputs:
         %    board - Name of the board
-        %    register - Name of the register
+        %    area - Name of the dma area
         %    channel - Channel of the DAQ Block
         %    sample - Amount of sample to read (optional, default: all available)
+        %    offset - Start element of the reading (optional, default: 0)
+        %    channels - Amount of available channels (optional, default: 8)
         %    mode - Data mode of 16 or 32bit (optional, default: 32)
         %    singed - Data mode of 16 or 32bit (optional, default: false)
         %    bit - Data mode of 16 or 32bit (optional, default: mode)

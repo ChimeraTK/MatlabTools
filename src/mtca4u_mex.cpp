@@ -291,6 +291,7 @@ void getInfo(unsigned int nlhs, mxArray *plhs[], unsigned int nrhs, const mxArra
  */
 void getDeviceInfo(unsigned int nlhs, mxArray **, unsigned int nrhs, const mxArray *prhs[])
 {
+  if(nrhs < 1) mexErrMsgTxt("Not enough input arguments.");
   if(nrhs > 1) mexWarnMsgTxt("Too many input arguments.");
   if(nlhs > 1) mexErrMsgTxt("Too many output arguments.");
 
@@ -505,7 +506,7 @@ void readDmaRaw(unsigned int nlhs, mxArray *plhs[], unsigned int nrhs, const mxA
 void readDmaChannel(unsigned int nlhs, mxArray *plhs[], unsigned int nrhs, const mxArray *prhs[])
 {
   if (nrhs < 3) mexErrMsgTxt("Not enough input arguments.");
-  if (nrhs > 9) mexWarnMsgTxt("Too many input arguments.");
+  if (nrhs > 10) mexWarnMsgTxt("Too many input arguments.");
   
   if (!mxIsChar(prhs[0])) mexErrMsgTxt("Invalid " + getOrdinalNumerString(1) + " input argument.");
   if (!mxIsChar(prhs[1])) mexErrMsgTxt("Invalid " + getOrdinalNumerString(2) + " input argument.");
