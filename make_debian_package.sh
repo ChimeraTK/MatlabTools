@@ -28,8 +28,7 @@ CHECKOUT_DIRECTORY=${PWD}/debian_package/${TAG_VERSION}
 
 rm -rf debian_package
 mkdir debian_package
-#svn co https://svnsrv.desy.de/desy/mtca4u_applications/matlab_tools/tags/${TAG_VERSION} ${CHECKOUT_DIRECTORY}
-svn co https://svnsrv.desy.de/desy/mtca4u_applications/matlab_tools/trunk ${CHECKOUT_DIRECTORY}
+svn co https://svnsrv.desy.de/desy/mtca4u_applications/matlab_tools/tags/${TAG_VERSION} ${CHECKOUT_DIRECTORY}
 
 cp -r debian_from_template ${CHECKOUT_DIRECTORY}/debian
 
