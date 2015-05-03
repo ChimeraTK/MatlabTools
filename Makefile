@@ -6,36 +6,51 @@ MTCA4U_MATLAB_VERSION=00.01.01
 
 #Set the correct parameters for the MTCA4U include
 #You can change the path to MTCA4U.CONFIG if you want to use a custom installation
-include /usr/share/mtca4u/MTCA4U.CONFIG
+#include /usr/share/mtca4u/MTCA4U.CONFIG
+include /home/mheuer/mtca4u_test_installation/MTCA4U.CONFIG
+
 
 MTCA4U_MEX_FLAGS = $(MtcaMappedDevice_INCLUDE_FLAGS)\
                    $(MtcaMappedDevice_LIB_FLAGS) $(MtcaMappedDevice_RUNPATH_FLAGS)
 
+#Set up MATLAB Stuff
+MATLAB_ROOT = /export/LOCALHOST/opt/matlab_R2013b/
+MEXEXT = $(shell $(MATLAB_ROOT)/bin/mexext)
+
+#Setup more stuff
 DIR = $(CURDIR)
 
+### Target
+all: bin/mtca4u_mex.$(MTCA4U_MATLAB_VERSION).$(MEXEXT)
+debug: bin/mtca4u_mex.$(MTCA4U_MATLAB_VERSION)_d.$(MEXEXT)
 
-all: bin/mtca4u_mex.$(MTCA4U_MATLAB_VERSION).mexa64
-
-bin/mtca4u_mex.$(MTCA4U_MATLAB_VERSION).mexa64: src/mtca4u_mex.cpp
+bin/mtca4u_mex.$(MTCA4U_MATLAB_VERSION).$(MEXEXT): src/mtca4u_mex.cpp include/version.h
 #use a similar naming scheme as normal .so files with version number and symlink
-#FIXME What to do about the extension? This is hard coded for intel 64 bit
-	echo CXXFLAGS=$(CXXFLAGS)
-	mex CFLAGS='$(CFLAGS)' CXXFLAGS='$(CXXFLAGS)' LDFLAGS='$(LDFLAGS)' -I./include $(MTCA4U_MEX_FLAGS)\
-	  -outdir bin -output mtca4u_mex.$(MTCA4U_MATLAB_VERSION) ./src/mtca4u_mex.cpp
-	(cd bin; ln -sf mtca4u_mex.$(MTCA4U_MATLAB_VERSION).mexa64 mtca4u_mex.mexa64)
+	mex CFLAGS='$(CFLAGS)' CXXFLAGS='$(CXXFLAGS)' LDFLAGS='$(LDFLAGS)' -I./include $(MTCA4U_MEX_FLAGS) \
+	-outdir bin -output mtca4u_mex.$(MTCA4U_MATLAB_VERSION) ./src/mtca4u_mex.cpp
+	(cd bin; ln -sf mtca4u_mex.$(MTCA4U_MATLAB_VERSION).$(MEXEXT) mtca4u_mex.$(MEXEXT))
 
-#debug:
-#	mex -v CFLAGS='$$CFLAGS' CXXFLAGS='$$CXXFLAGS' LDFLAGS='$$LDFLAGS' $(MTCA_INCLUDE_FLAG) $(MTCA_LIB_FLAG) -lMtcaMappedDevice -outdir bin ./src/mtca4u.cpp -D__MEX_DEBUG_MODE
+bin/mtca4u_mex.$(MTCA4U_MATLAB_VERSION)_d.$(MEXEXT): src/mtca4u_mex.cpp include/version.h
+#use a similar naming scheme as normal .so files with version number and symlink
+	mex CFLAGS='$(CFLAGS)' CXXFLAGS='$(CXXFLAGS)' LDFLAGS='$(LDFLAGS)' -I./include $(MTCA4U_MEX_FLAGS) \
+	-g -outdir bin -output mtca4u_mex.$(MTCA4U_MATLAB_VERSION) ./src/mtca4u_mex.cpp -D__MEX_DEBUG_MODE
+	(cd bin; ln -sf mtca4u_mex.$(MTCA4U_MATLAB_VERSION)_d.$(MEXEXT) mtca4u_mex.$(MEXEXT))
 
-.PHONY: clean install install_local test 
+include/version.h : .FORCE
+	echo "const std::string gVersion(\"$(MTCA4U_MATLAB_VERSION)\");" > include/version.h
+
+.PHONY: clean install install_local test .FORCE
+
+.FORCE:
+	
 
 clean:	
 	rm -rf ./bin debian_from_template debian_package
 
 #this will fail at the moment. At least $DIR is empty and setup.m is not in bin
-install: all
-	cd ~ && matlab -nojvm -r "cd $(DIR)/bin, run setup.m, savepath ~/pathdef.m, exit"
-	@echo "Path saved in ~/pathdef.m" 
+#install: all
+#	cd ~ && matlab -nojvm -r "cd $(DIR)/bin, run setup.m, savepath ~/pathdef.m, exit"
+#	@echo "Path saved in ~/pathdef.m" 
 
 system_install: all
 	test -d /local/lib || mkdir -p /local/lib
@@ -56,6 +71,6 @@ configure-package-files:
 debian_package: configure-package-files
 	./make_debian_package.sh ${MTCA4U_MATLAB_VERSION}
 
-#test:
-#	matlab -nojvm -r "try run('./unit_test/run_test.m'), catch ex, disp(ex.message); exit; end, exit"
+test:
+	cd test && make all
 

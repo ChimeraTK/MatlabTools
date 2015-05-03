@@ -1,0 +1,72 @@
+#include <stdlib.h>
+#include <stdio.h>
+#include <string>
+#include <string.h>
+
+//#include <errno.h>
+//#include <dlfcn.h>
+
+#include "engine.h"
+
+#define  BUFSIZE 256
+
+typedef void (*mexFunction_t)(int nargout, mxArray *pargout [ ], int nargin, const mxArray *pargin[]);
+
+int main(int argc, const char *argv[])
+
+{
+  Engine *ep;
+  char buff[BUFSIZE+1];
+  memset (buff,0,BUFSIZE+1); // MATLAB will not NULL-Terminate the string!
+
+  /* matlab must be in the PATH! */
+  if (!(ep = engOpen("matlab -nodisplay"))) {
+    fprintf(stderr, "Can't start MATLAB engine\n");
+    return -1;
+  }
+  engOutputBuffer(ep, buff, 1023);
+
+  /* load the mex file */
+  if(argc<2){
+    fprintf(stderr, "Error. Give full path to the MEX file as input parameter.\n");
+    return -1;
+  }
+
+  /* Add path */
+
+  engEvalString(ep, "addpath('../bin/');");
+  engEvalString(ep, "addpath('../matlab/');");
+  engEvalString(ep, "addpath('./matlab/');");
+
+  /* Excecute Script */
+
+  engOutputBuffer(ep, buff, BUFSIZE);
+
+  std::string cmd = std::string("try ") + argv[1] + "; ret = 0; catch ex, ret = 1; rethrow(ex); end";
+
+  engEvalString(ep, cmd.c_str());
+
+  engOutputBuffer(ep, NULL, 0);
+
+  /* */
+  mxArray *result = NULL;
+  int ret = 1;
+
+  if ((result = engGetVariable(ep,"ret")) != NULL) {
+    if (mxIsNumeric(result) && !mxIsComplex(result) && (mxGetNumberOfElements(result) == 1)) {
+      ret = mxGetScalar(result);
+    }
+    else printf("Wrong return code\n\n");
+  }
+  else printf("Oops! You didn't create a variable ret.\n\n");
+
+  if ((ret != 0) || !((argc > 2) && (strcmp(argv[2],"-s") == 0))) {
+    printf("\n%s\n",buff);
+  }
+
+  /* cleanup */
+  engEvalString(ep, "clear all;");
+  engClose(ep);
+
+  return ret;
+}

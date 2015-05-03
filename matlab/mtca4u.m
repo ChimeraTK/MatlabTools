@@ -5,6 +5,7 @@ classdef mtca4u
   %   print_info - Displays all available boards with additional information
   %   print_device_info - Displays all available registers of a board
   %   print_register_info - Displays all information of a certain register
+  %   get_register_size - Returns the size of a register
   %   read - Reads data from the register of a board
   %   write - Writes data to the register of a board
   %   read_dma_raw - Reads raw data from a board using direct memory access
@@ -16,16 +17,27 @@ classdef mtca4u
   %
   % Last revision: 27-May-2014
   
-   properties
-        prefix = '';
+   properties  (Access = 'private')
+       device = [];
+       handle = [];
+	   c; % used for calling the destructor
    end
-    
+   
+   properties  (Access = 'public')
+       debug = 0;
+   end
+   
    methods (Static, Access = 'public')
-        %mtca4u.mtca4u - Constructor of the Wrapper class
-        function obj = mtca4u()
-        end
-        
-        function print_info(varargin)
+		function ver = version()
+        %mtca4u.version - Returns the library version
+		    try
+                ver = mtca4u_mex('version');
+            catch ex
+                error(ex.message)
+            end
+		end
+		
+		function print_info(~, varargin)
         %mtca4u.print_info - Displays all available boards with additional information
         %
         % Syntax:
@@ -38,22 +50,47 @@ classdef mtca4u
                 error(ex.message)
             end
             for i = info
-                fprintf(['Name: ', i.name, '\t Slot: ', num2str(i.slot), '\t Firmware: ', num2str(i.firmware), '\t Revision: ', num2str(i.revision), '\n']);
+                fprintf(['Name: ', i.name, '\t Device: ', i.device, '\t Firmware: ', num2str(i.firmware), '\t Date: ', i.date, '\t Map: ', i.map, '\n']);
             end
         end
+   end
+   
+   methods
+        function obj = delete(obj)
+         %mtca4u.delete - Destructor of the Wrapper class
+			try
+                mtca4u_mex('close', obj.handle);
+            catch ex
+                error(ex.message)
+            end
+        end
+   end
+   
+   methods (Access = 'public')
+        %mtca4u.mtca4u - Constructor of the Wrapper class
+		%
+        function obj = mtca4u(board)
+			obj.device = board;
+            try
+                %mtca4u_mex('refresh_dmap');
+                obj.handle = mtca4u_mex('open', obj.device);
+            catch ex
+                error(ex.message)
+            end
+            obj.c = onCleanup(@()obj.delete()); % "Register" the destructor
+            % Todo: this works only if it is not possible to change the
+            % handle after the creation!
+        end
 
-        function print_device_info(varargin)
+        function print_device_info(obj, varargin)
         %mtca4u.print_device_info - Displays all available registers of a board
         %
         % Syntax:
         %    mtca4u.print_device_info()
         %
-        % Inputs:
-        %    board - Name of the board 
-        %
         % See also: mtca4u_load_dmap, mtcau4_read
             try
-                info = mtca4u_mex('device_info', varargin{:});
+                info = mtca4u_mex('device_info', obj.handle, varargin{:});
             catch ex
                 error(ex.message);
             end   
@@ -61,18 +98,18 @@ classdef mtca4u
             end
         end
 
-        function print_register_info(varargin)
+        function print_register_info(obj, varargin)
         %mtca4u.print_register_info - Displays all information of a certain register
         %
         % Syntax:
-        %    mtca4u.print_register_info(board, register)
+        %    mtca4u.print_register_info(module, register)
         %
         % Inputs:
-        %    board - Name of the board
+        %    module - Name of the module
         %    register - Name of the register
         %
             try
-                info = mtca4u_mex('register_info', varargin{:});
+                info = mtca4u_mex('register_info', obj.handle, varargin{:});
             catch ex
                 error(ex.message);
             end
@@ -82,69 +119,90 @@ classdef mtca4u
                 '\nDescription: ', num2str(i.description),'\n']);
             end
         end
+		
+		function s = get_register_size(obj, varargin)
+        %mtca4u.get_register_size - Return the number of elements in the register
+        %
+        % Syntax:
+        %    mtca4u.get_register_size(module, register)
+        %
+        % Inputs:
+        %    module - Name of the module
+        %    register - Name of the register
+        %
+            try
+                s = mtca4u_mex('register_size', obj.handle, varargin{:});
+            catch ex
+                error(ex.message);
+            end
+        end
 
-        function varargout = read(varargin)
+
+        function varargout = read(obj, varargin)
         %mtca4u.read - Reads data from the register of a board
         %
         % Syntax:
-        %    [data] = mtca4u.read(board, register)
-        %    [data] = mtca4u.read(board, register, elements, offset)
+        %    [data] = mtca4u.read(module, register)
+        %    [data] = mtca4u.read(module, register, offset, elements)
         %    ...
         %
         % Inputs:
         %    board - Name of the board
         %    register - Name of the register
-        %    elements - Number of elements to be read (optional, default: 'offset:end')
-        %    offset - Start element of the reading (optional, default: 0)
+		%    offset - Start element of the reading (optional, default: 1)
+        %    elements - Number of elements to be read (optional, default: 'numel(offset:end)')
         %
         % Outputs:
         %    data - Value/s of the register 
         %
         % See also: mtca4u , mtca4u.write
             try
-                [varargout{1:nargout}] = mtca4u_mex('read', varargin{:});
+                [varargout{1:nargout}] = mtca4u_mex('read', obj.handle, varargin{:});
             catch ex
                 error(ex.message);
             end
         end
 
-        function write(varargin)
+        function write(obj, varargin)
         %mtca4u.write - Writes data to the register of a board
         %
         % Syntax:
-        %    mtca4u_write(board, register, value)
-        %    mtca4u_write(board, register, value, offset)
+        %    mtca4u.write(module, register, value)
+        %    mtca4u.write(module, register, value, offset)
         %    ...
         %
         % Inputs:
         %    board - Name of the board
         %    register - Name of the register
         %    value - Value or Vector to be written
-        %    offset - Start element of the writing (optional, default: 0)
+        %    offset - Start element of the writing (optional, default: 1)
+		%
+		% Examples:
+		%    mtca4('SISL').write('BOARD', 'WORD_REGISTER', bin2dec('00101'));
         %
         % See also: mtca4u, mtca4u.read
             try
-                mtca4u_mex('write', varargin{:});
+                mtca4u_mex('write', obj.handle, varargin{:});
             catch ex
                 error(ex.message);
             end
         end
 
-        function [varargout] = read_dma_raw(varargin)
+        function [varargout] = read_dma_raw(obj, varargin)
         %mtca4u.read_dma_raw - Reads data from a board using direct memory access
         %
         % Syntax:
-        %    [data] = mtca4u.read_dma_raw(board, area)
-        %    [data] = mtca4u.read_dma_raw(board, area, sample, offset)
-        %    [data] = mtca4u.read_dma_raw(board, area, sample, offset, mode)
-        %    [data] = mtca4u.read_dma_raw(board, area, sample, offset, mode, singed, bit, fracbit)
+        %    [data] = mtca4u.read_dma_raw(module, register)
+        %    [data] = mtca4u.read_dma_raw(module, register, offset)
+        %    [data] = mtca4u.read_dma_raw(module, register, offset, elements, mode)
+        %    [data] = mtca4u.read_dma_raw(module, register, offset, elements, mode, singed, bit, fracbit)
         %    ...
         %
         % Inputs:
         %    board - Name of the board
         %    register - Name of the register
-        %    sample - Number of sample to be read (optional, default: all available)
-        %    offset - Start element of the writing (optional, default: 0)
+        %    offset - Start element of the writing (optional, default: 1)
+        %    elements - Number of elements to be read (optional, default: 'numel(offset:end)')
         %    mode - Data mode of 16 or 32bit (optional, default: 32)
         %    singed - Data mode of 16 or 32bit (optional, default: false)
         %    bit - Data mode of 16 or 32bit (optional, default: mode)
@@ -155,31 +213,29 @@ classdef mtca4u
         %
         % See also: mtca4u, mtcau4.read
           try
-            [varargout{1:nargout}] = mtca4u_mex('read_dma_raw', varargin{:});
+            [varargout{1:nargout}] = mtca4u_mex('read_dma_raw', obj.handle, varargin{:});
           catch ex
             error(ex.message);
           end
         end
          
-        function [varargout] = read_dma(varargin)
+        function [varargout] = read_dma(obj, varargin)
         %mtca4u.read_dma - Reads data from a board using direct memory access
         %             
         % Syntax:
-        %    [data] = mtca4u.read_dma(board, area, channel)
-        %    [data] = mtca4u.read_dma(board, area, channel, sample, offset)
-        %    [data] = mtca4u.read_dma(board, area, channel, sample, offset, channels, mode)
-        %    [data] = mtca4u.read_dma(board, area, channel, sample, offset, channels, mode, signed, bit, fracbit)
-        %    [channel1, channel2, ...] = mtca4u.read_dma(board, area, [1, 2 ...], sample, offset)
-        %    [channel1, channel2, ...] = mtca4u.read_dma(board, area, [1, 2 ...], sample, offset, channels, mode, signed, bit, fracbit)
+        %    [data] = mtca4u(board).read_dma(module, register, channel)
+        %    [data] = mtca4u.read_dma(module, register, channel, offset, elements)
+        %    [data] = mtca4u.read_dma(module, register, channel, offset, elements)
+        %    [data] = mtca4u.read_dma(module, register, channel, offset, elements, mode, signed, bit, fracbit)
+        %    [channel1, channel2, ...] = mtca4u.read_dma(module, register, [1, 2 ...], offset, elements)
+        %    [channel1, channel2, ...] = mtca4u.read_dma(module, register, [1, 2 ...], offset, elements, mode, signed, bit, fracbit)
         %    ...
         %
         % Inputs:
         %    board - Name of the board
-        %    area - Name of the dma area
+        %    register - Name of the register
         %    channel - Channel of the DAQ Block
         %    sample - Amount of sample to read (optional, default: all available)
-        %    offset - Start element of the reading (optional, default: 0)
-        %    channels - Amount of available channels (optional, default: 8)
         %    mode - Data mode of 16 or 32bit (optional, default: 32)
         %    singed - Data mode of 16 or 32bit (optional, default: false)
         %    bit - Data mode of 16 or 32bit (optional, default: mode)
@@ -190,7 +246,7 @@ classdef mtca4u
         %
         % See also: mtca4u, mtca4u.read, mtca4u.write
           try
-            [varargout{1:nargout}] = mtca4u_mex('read_dma', varargin{:});
+            [varargout{1:nargout}] = mtca4u_mex('read_dma', obj.handle, varargin{:});
           catch ex
             error(ex.message);
           end
