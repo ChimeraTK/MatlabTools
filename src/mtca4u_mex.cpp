@@ -217,12 +217,12 @@ boost::shared_ptr< devMap<devPCIE> > getDevice(const mxArray *prhsDevice) //, co
 {
   if (!mxIsRealScalar(prhsDevice))
     mexErrMsgTxt("Invalid device handle.");
-  
+
   const size_t deviceHandle = mxGetScalar(prhsDevice);
-	
+
   if (deviceHandle >= openDevicesVector.size())
-    mexErrMsgTxt("Invalid device handle."); 
-  
+    mexErrMsgTxt("Invalid device handle.");
+ 
   if (!openDevicesVector[deviceHandle])
     mexErrMsgTxt("Device closed.");
 
@@ -289,9 +289,9 @@ void openDevice(unsigned int, mxArray *plhs[], unsigned int nrhs, const mxArray 
   plhs[0] = mxCreateDoubleMatrix(1, 1, mxREAL);
   (*mxGetPr(plhs[0])) = openDevicesVector.size()-1;
   
-  //#ifdef __MEX_DEBUG_MODE
+  #ifdef __MEX_DEBUG_MODE
   mexPrintf("Successfully opened "+ deviceName + " at " + it->first.dev_file + "\n");
-  //#endif
+  #endif
 }
 
 /**
@@ -302,19 +302,19 @@ void closeDevice(unsigned int, mxArray **, unsigned int nrhs, const mxArray *prh
 {
   if (nrhs < 1) mexErrMsgTxt("Not enough input arguments.");
   if (nrhs > 1) mexWarnMsgTxt("Too many input arguments.");
-  
+
   if (!mxIsRealScalar(prhs[0])) mexErrMsgTxt("Invalid device handle.");
-  
+
   const size_t deviceHandle = mxGetScalar(prhs[0]);
-	
+
   if (deviceHandle >= openDevicesVector.size())
-    mexErrMsgTxt("Invalid device handle."); 
+    mexErrMsgTxt("Invalid device handle.");
 
   openDevicesVector[deviceHandle].reset();
-  
-  //#ifdef __MEX_DEBUG_MODE
+
+  #ifdef __MEX_DEBUG_MODE
   mexPrintf("Device closed\n");
-  //#endif
+  #endif
 }
 
 /**
@@ -338,7 +338,7 @@ void getInfo(unsigned int nlhs, mxArray *plhs[], unsigned int nrhs, const mxArra
 {
   if(nrhs > 0) mexWarnMsgTxt("Too many input arguments.");
   if(nlhs > 1) mexErrMsgTxt("Too many output arguments.");
-    
+
   dmapFilesParser parser(".");
 
   mwSize dims[2] = {1, (int)parser.getdMapFileSize()};
@@ -348,26 +348,26 @@ void getInfo(unsigned int nlhs, mxArray *plhs[], unsigned int nrhs, const mxArra
   unsigned int i = 0;
 
   for (dmapFilesParser::iterator it = parser.begin(); it != parser.end(); ++it, ++i)
-  {            
+  {
     mxArray *firmware_value = mxCreateDoubleMatrix(1,1,mxREAL);
     *mxGetPr(firmware_value) = 0;
-    
+
     std::string date;
-    
+
     try {
       devMap<devPCIE> tempDevice;
       tempDevice.openDev(it->first.dev_file, it->first.map_file_name);
-      
+
       int firmware = 0;
       tempDevice.readReg("BOARD0", "WORD_FIRMWARE", &firmware);
       *mxGetPr(firmware_value) = firmware;
-      
+
       int timestamp = 0;
       tempDevice.readReg("BOARD0", "WORD_TIMESTAMP", &timestamp);
       date = timestamp;
     }
     catch(...) { }
-    
+
     mxSetFieldByNumber(plhs[0], i, 0, mxCreateString(it->first.dev_name.c_str()));
     mxSetFieldByNumber(plhs[0], i, 1, mxCreateString(it->first.dev_file.c_str()));
     mxSetFieldByNumber(plhs[0], i, 2, firmware_value);
