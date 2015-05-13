@@ -2,7 +2,7 @@ CFLAGS = $$CFLAGS -Wall -Wextra -Wshadow -pedantic -Wuninitialized -std=c++0x
 CXXFLAGS = $$CXXFLAGS -Wall -Wextra -Wshadow -pedantic -Wuninitialized -std=c++0x
 LDFLAGS = $$LDFLAGS -w -std=c++0x
 
-MTCA4U_MATLAB_VERSION=00.01.01
+MTCA4U_MATLAB_VERSION=00.02.00
 
 #Set the correct parameters for the MTCA4U include
 #You can change the path to MTCA4U.CONFIG if you want to use a custom installation
@@ -42,7 +42,7 @@ include/version.h : .FORCE
 .PHONY: clean install install_local test .FORCE
 
 .FORCE:
-	
+
 
 clean:	
 	rm -rf ./bin debian_from_template debian_package
