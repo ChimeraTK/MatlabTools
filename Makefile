@@ -6,8 +6,8 @@ MTCA4U_MATLAB_VERSION=00.02.00
 
 #Set the correct parameters for the MTCA4U include
 #You can change the path to MTCA4U.CONFIG if you want to use a custom installation
-#include /usr/share/mtca4u/MTCA4U.CONFIG
-include /home/mheuer/mtca4u_test_installation/MTCA4U.CONFIG
+include /usr/share/mtca4u/MTCA4U.CONFIG
+#include /home/mheuer/mtca4u_test_installation/MTCA4U.CONFIG
 
 
 MTCA4U_MEX_FLAGS = $(MtcaMappedDevice_INCLUDE_FLAGS)\
