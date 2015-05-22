@@ -488,7 +488,7 @@ void getRegisterSize(unsigned int nlhs, mxArray *plhs[], unsigned int nrhs, cons
  */
 void readRegister(unsigned int nlhs, mxArray *plhs[], unsigned int nrhs, const mxArray *prhs[])
 {
-  const unsigned int pp_device = 0, pp_module = 1, pp_register = 2, pp_offset = 3, pp_elements = 4;
+  static const unsigned int pp_device = 0, pp_module = 1, pp_register = 2, pp_offset = 3, pp_elements = 4;
   
   if (nrhs < 3) mexErrMsgTxt("Not enough input arguments.");
   if (nrhs > 5) mexWarnMsgTxt("To many input arguments.");
@@ -499,8 +499,11 @@ void readRegister(unsigned int nlhs, mxArray *plhs[], unsigned int nrhs, const m
   if (!mxIsChar(prhs[pp_module])) mexErrMsgTxt("Invalid " + getOrdinalNumerString(pp_module) + " input argument.");
   if (!mxIsChar(prhs[pp_register])) mexErrMsgTxt("Invalid " + getOrdinalNumerString(pp_register) + " input argument.");
 	
-  if ((nrhs > pp_offset) && !mxIsRealScalar(prhs[pp_offset])) mexErrMsgTxt("Invalid " + getOrdinalNumerString(pp_offset) + " input argument.");
-  if ((nrhs > pp_elements) && !mxIsPositiveRealScalar(prhs[pp_elements])) mexErrMsgTxt("Invalid " + getOrdinalNumerString(pp_elements) + " input argument.");
+  if ((nrhs > pp_offset) && ( !mxIsRealScalar(prhs[pp_offset]) || (mxGetScalar(prhs[pp_offset]) < 0) ))
+    mexErrMsgTxt("Invalid " + getOrdinalNumerString(pp_offset) + " input argument.");
+    
+  if ((nrhs > pp_elements) && !mxIsPositiveRealScalar(prhs[pp_elements]))
+    mexErrMsgTxt("Invalid " + getOrdinalNumerString(pp_elements) + " input argument.");
 	
   devMap<devPCIE>::RegisterAccessor reg = device->getRegisterAccessor(mxArrayToStdString(prhs[pp_register]),mxArrayToStdString(prhs[pp_module]));
 
@@ -511,7 +514,7 @@ void readRegister(unsigned int nlhs, mxArray *plhs[], unsigned int nrhs, const m
 
   plhs[0] = mxCreateDoubleMatrix(1, elements, mxREAL);
   double *plhsValue = mxGetPr(plhs[0]);
-  reg.read(plhsValue, elements, offset * sizeof(uint32_t));
+  reg.read(plhsValue, elements, offset);
 }
 
 /**
@@ -521,29 +524,29 @@ void readRegister(unsigned int nlhs, mxArray *plhs[], unsigned int nrhs, const m
  */
 void writeRegister(unsigned int, mxArray **, unsigned int nrhs, const mxArray *prhs[])
 {
-  const unsigned int pp_device = 0, pp_module = 1, pp_register = 2, pp_value = 3, pp_offset = 4;
+  static const unsigned int pp_device = 0, pp_module = 1, pp_register = 2, pp_value = 3, pp_offset = 4;
   
-  if (nrhs < 3) mexErrMsgTxt("Not enough input arguments.");
+  if (nrhs < 4) mexErrMsgTxt("Not enough input arguments.");
   if (nrhs > 5) mexWarnMsgTxt("To many input arguments.");
   
   boost::shared_ptr< devMap<devPCIE> > device = getDevice(prhs[pp_device]);
 	
   if (!mxIsChar(prhs[pp_module]))  mexErrMsgTxt("Invalid " + getOrdinalNumerString(pp_module) + " input argument.");
   if (!mxIsChar(prhs[pp_register]))  mexErrMsgTxt("Invalid " + getOrdinalNumerString(pp_register) + " input argument.");
-   
+
   if (!mxIsNumeric(prhs[pp_value]) || mxIsComplex(prhs[pp_value]))
     mexErrMsgTxt("Invalid " + getOrdinalNumerString(pp_value) + " input argument.");
   
-  if ((nrhs > pp_offset) && !mxIsRealScalar(prhs[pp_offset]))
+  if ((nrhs > pp_offset) && (!mxIsRealScalar(prhs[pp_offset]) ||(mxGetScalar(prhs[pp_offset]) < 0)))
     mexErrMsgTxt("Invalid " + getOrdinalNumerString(pp_offset) + " input argument.");
-  
+
   devMap<devPCIE>::RegisterAccessor reg = device->getRegisterAccessor(mxArrayToStdString(prhs[pp_register]), mxArrayToStdString(prhs[pp_module]));
-  
-  uint32_t ValueOffset = (nrhs > pp_offset) ? mxGetScalar(prhs[pp_offset]) : 0;
+
+  const uint32_t offset = (nrhs > pp_offset) ? mxGetScalar(prhs[pp_offset]) : 0;
   
   double *prhsValue = mxGetPr(prhs[pp_value]);
   size_t prhsValueElements = mxGetNumberOfElements(prhs[pp_value]);
-  reg.write(prhsValue, prhsValueElements, ValueOffset*sizeof(uint32_t)); // sizeof due to bad design
+  reg.write(prhsValue, prhsValueElements, offset);
 }
 
 /**
@@ -568,8 +571,8 @@ template<class T> void innerRawDMARead(const devMap<devPCIE>::RegisterAccessor &
  */
 void readDmaRaw(unsigned int nlhs, mxArray *plhs[], unsigned int nrhs, const mxArray *prhs[])
 {
-  const unsigned int pp_device = 0, pp_module = 1, pp_register = 2, pp_offset = 3, pp_elements = 4;
-  const unsigned int pp_mode = 5, pp_signed = 6, pp_bit = 7, pp_fracbit = 8;
+  static const unsigned int pp_device = 0, pp_module = 1, pp_register = 2, pp_offset = 3, pp_elements = 4;
+  static const unsigned int pp_mode = 5, pp_signed = 6, pp_bit = 7, pp_fracbit = 8;
 	
   if (nrhs < 3) mexErrMsgTxt("Not enough input arguments.");
   if (nrhs > 9) mexWarnMsgTxt("Too many input arguments.");
@@ -618,8 +621,8 @@ void readDmaRaw(unsigned int nlhs, mxArray *plhs[], unsigned int nrhs, const mxA
  */
 void readDmaChannel(unsigned int nlhs, mxArray *plhs[], unsigned int nrhs, const mxArray *prhs[])
 {
-  const unsigned int pp_device = 0, pp_module = 1, pp_register = 2, pp_channel = 3, pp_offset = 4, pp_elements = 5;
-  const unsigned int pp_channel_cnt = 6, pp_mode = 7, pp_signed = 8, pp_bit = 9, pp_fracbit = 10;
+  static const unsigned int pp_device = 0, pp_module = 1, pp_register = 2, pp_channel = 3, pp_offset = 4, pp_elements = 5;
+  static const unsigned int pp_channel_cnt = 6, pp_mode = 7, pp_signed = 8, pp_bit = 9, pp_fracbit = 10;
   
   if (nrhs < 3) mexErrMsgTxt("Not enough input arguments.");
   if (nrhs > 11) mexWarnMsgTxt("Too many input arguments.");

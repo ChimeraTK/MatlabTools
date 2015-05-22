@@ -1,2 +1,1 @@
-// Automatically generated
-const std::string gVersion = "0.1";
+const std::string gVersion("00.02.00");
