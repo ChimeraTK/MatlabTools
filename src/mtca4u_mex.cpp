@@ -388,7 +388,7 @@ void getDeviceInfo(unsigned int nlhs, mxArray ** plhs, unsigned int nrhs, const 
 
   boost::shared_ptr< devMap<devPCIE> > device = getDevice(prhs[0]);
 
-  const boost::shared_ptr<mtca4u::mapFile> map = device->getRegisterMap();
+  const boost::shared_ptr<const mtca4u::mapFile> map = device->getRegisterMap();
 
   const char *field_names[] = {"name", "elements", "signed", "bits", "fractional_bits", "description"};
   plhs[0] = mxCreateStructMatrix(map->getMapFileSize(), 1, (sizeof(field_names)/sizeof(*field_names)), field_names);
