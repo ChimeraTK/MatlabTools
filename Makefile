@@ -1,8 +1,8 @@
-CFLAGS = $$CFLAGS -Wall -Wextra -Wshadow -pedantic -Wuninitialized -std=c++0x
-CXXFLAGS = $$CXXFLAGS -Wall -Wextra -Wshadow -pedantic -Wuninitialized -std=c++0x
-LDFLAGS = $$LDFLAGS -w -std=c++0x
+CFLAGS = $$CFLAGS -Wall -Wextra -Wshadow -pedantic -Wuninitialized -std=c++0x $(DEBUG_FLAGS)
+CXXFLAGS = $$CXXFLAGS -Wall -Wextra -Wshadow -pedantic -Wuninitialized -std=c++0x $(DEBUG_FLAGS)
+LDFLAGS = $$LDFLAGS -w -std=c++0x $(DEBUG_FLAGS)
 
-MTCA4U_MATLAB_VERSION=00.02.00
+include mtca4u_matlab_version
 
 #Set the correct parameters for the MTCA4U include
 #You can change the path to MTCA4U.CONFIG if you want to use a custom installation
@@ -14,15 +14,19 @@ MTCA4U_MEX_FLAGS = $(MtcaMappedDevice_INCLUDE_FLAGS)\
                    $(MtcaMappedDevice_LIB_FLAGS) $(MtcaMappedDevice_RUNPATH_FLAGS)
 
 #Set up MATLAB Stuff
-MATLAB_ROOT = /export/LOCALHOST/opt/matlab_R2013b/
+MATLAB_ROOT = /opt/matlab_R2013b/
 MEXEXT = $(shell $(MATLAB_ROOT)/bin/mexext)
 
 #Setup more stuff
-DIR = $(CURDIR)
+PWD = $(shell pwd)
 
 ### Target
 all: bin/mtca4u_mex.$(MTCA4U_MATLAB_VERSION).$(MEXEXT)
-debug: bin/mtca4u_mex.$(MTCA4U_MATLAB_VERSION)_d.$(MEXEXT)
+	make -C test all
+
+debug:
+	DEBUG_FLAGS="-O0 --coverage" make bin/mtca4u_mex.$(MTCA4U_MATLAB_VERSION)_d.$(MEXEXT)
+	make -C test debug
 
 bin/mtca4u_mex.$(MTCA4U_MATLAB_VERSION).$(MEXEXT): src/mtca4u_mex.cpp include/version.h
 #use a similar naming scheme as normal .so files with version number and symlink
@@ -33,8 +37,10 @@ bin/mtca4u_mex.$(MTCA4U_MATLAB_VERSION).$(MEXEXT): src/mtca4u_mex.cpp include/ve
 bin/mtca4u_mex.$(MTCA4U_MATLAB_VERSION)_d.$(MEXEXT): src/mtca4u_mex.cpp include/version.h
 #use a similar naming scheme as normal .so files with version number and symlink
 	mex CFLAGS='$(CFLAGS)' CXXFLAGS='$(CXXFLAGS)' LDFLAGS='$(LDFLAGS)' -I./include $(MTCA4U_MEX_FLAGS) \
-	-g -outdir bin -output mtca4u_mex.$(MTCA4U_MATLAB_VERSION) ./src/mtca4u_mex.cpp -D__MEX_DEBUG_MODE
+	-g -outdir bin -output mtca4u_mex.$(MTCA4U_MATLAB_VERSION)_d ./src/mtca4u_mex.cpp -D__MEX_DEBUG_MODE
 	(cd bin; ln -sf mtca4u_mex.$(MTCA4U_MATLAB_VERSION)_d.$(MEXEXT) mtca4u_mex.$(MEXEXT))
+	#needed to trick gcov:
+	(cd bin; ln -sf mtca4u_mex.$(MEXEXT) libmtca4u_mex.so; ln -sf ../include . ; ln -sf ../src . )
 
 include/version.h : .FORCE
 	echo "const std::string gVersion(\"$(MTCA4U_MATLAB_VERSION)\");" > include/version.h
@@ -45,7 +51,9 @@ include/version.h : .FORCE
 
 
 clean:	
-	rm -rf ./bin debian_from_template debian_package
+	rm -rf ./bin debian_from_template debian_package include/version.h 
+	rm -rf coverage_html coverage.info coverage_all.info
+	make -C test clean
 
 #this will fail at the moment. At least $DIR is empty and setup.m is not in bin
 #install: all
@@ -72,5 +80,13 @@ debian_package: configure-package-files
 	./make_debian_package.sh ${MTCA4U_MATLAB_VERSION}
 
 test:
-	cd test && make all
+	make -C test test
 
+coverage:
+	rm -f `find . -name "*\.gcda"`
+	make test || true
+	lcov --capture --directory . --output-file coverage_all.info
+	#lcov capture also includes external stuff like glibc, boost etc.
+	#only extract the reports for this project
+	lcov --extract coverage_all.info "$(PWD)*" -o coverage.info
+	genhtml coverage.info --output-directory coverage_html
