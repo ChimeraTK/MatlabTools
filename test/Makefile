@@ -37,6 +37,7 @@ clean :
 	rm -f ./mlcallmex 
 	rm -f ./callgrind.out.*
 	rm -rf *.gcda *.gcno
+	rm -rf test_version.m
 	rm -rf Testing
 
 debug:
