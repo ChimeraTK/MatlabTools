@@ -5,10 +5,15 @@ LDFLAGS = $$LDFLAGS -w -std=c++0x $(DEBUG_FLAGS)
 include mtca4u_matlab_version
 
 #Set the correct parameters for the MTCA4U include
-#You can change the path to MTCA4U.CONFIG if you want to use a custom installation
-include /usr/share/mtca4u/MTCA4U.CONFIG
-#include /home/mheuer/mtca4u_test_installation/MTCA4U.CONFIG
-
+#You can change the path by setting the environment variable MTCA4U_DIR or
+# by calling make preceeded by the assignmet.
+# Example
+# $ MTCA4U_DIR=/home/mheuer/mtca4u_test_installation make
+ifdef MTCA4U_DIR
+  include $(MTCA4U_DIR)/MTCA4U.CONFIG
+else
+  include /usr/share/mtca4u/MTCA4U.CONFIG
+endif
 
 MTCA4U_MEX_FLAGS = $(MtcaMappedDevice_INCLUDE_FLAGS)\
                    $(MtcaMappedDevice_LIB_FLAGS) $(MtcaMappedDevice_RUNPATH_FLAGS)
