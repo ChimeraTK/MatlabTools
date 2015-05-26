@@ -51,8 +51,8 @@ readback = m.read('','AREA_DMAABLE',offset);
 register_size = m.get_register_size('','AREA_DMAABLE');
 
 assert(numel(readback) == (register_size-offset), 'Wrong number of elements read back');
-assert(sum(readback(1:numel(value)-offset) ~= value(offset+1:end)) == 0, 'Wrong array read back');
-clear v rb s
+assert(sum(readback ~= value(offset+1:end)) == 0, 'Wrong array read back');
+clear value readbback register_size
 
 %% Test the readback of an array with offset and elements
 
@@ -64,7 +64,7 @@ readback = m.read('','AREA_DMAABLE',offset,elements);
 
 assert(numel(readback) == elements, 'Wrong number of elements read back');
 assert(sum(readback ~= value(offset+1:elements+offset)) == 0, 'Wrong array read back');
-clear v rb s
+clear value readbback register_size elements
 
 %% Test the write of error or bad values
 
