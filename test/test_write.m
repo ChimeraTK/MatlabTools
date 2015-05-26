@@ -69,4 +69,3 @@ clear value readbback register_size elements
 %% Test the write of error or bad values
 
 check_error(@()m.write('','AREA_DMAABLE',0,-1), 'Illegal offset excepted');
-check_error(@()m.write('','AREA_DMAABLE',0,0,-1), 'Illegal element number excepted');

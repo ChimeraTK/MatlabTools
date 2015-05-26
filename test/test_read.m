@@ -32,19 +32,19 @@ ref = (0:1:24).^2;
 
 offset = 5;
 readback = m.read('', 'AREA_DMAABLE', offset);
-assert(sum(readback ~= value(offset+1:end)), 'Wrong array read back');
+assert(isequal(readback(1:numel(ref)-offset), ref(offset+1:end)), 'Wrong array read back');
 clear readback offset
 
 elements = 5;
 readback = m.read('', 'AREA_DMAABLE', 0, elements);
 assert(numel(readback) == elements, 'Wrong number of elements read back');
-assert(sum(readback ~= value(offset+1:end)), 'Wrong array read back');
+assert(isequal(readback, ref(1:elements)), 'Wrong array read back');
 clear readback offset
 
 offset = 4;
 elements = 10;
 readback = m.read('', 'AREA_DMAABLE', offset, elements);
 assert(numel(readback) == elements, 'Wrong number of elements read back');
-assert(sum(readback ~= ref(offset+1:offset+1+elements)), 'Wrong array read back');
+assert(isequal(readback, ref(offset+1:offset+elements)), 'Wrong array read back');
 clear readback offset
 
