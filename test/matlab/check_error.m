@@ -4,7 +4,8 @@ err = 1;
 try
   fnc();
   err = 0;
-catch 
+catch msg
+  warning(msg.message);
 end
 
 if err == 0

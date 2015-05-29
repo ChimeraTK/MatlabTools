@@ -29,9 +29,9 @@ using namespace std;
 
 // Some c++ wrapper and utility functions
 
-void mexPrintf(const std::string s) { mexPrintf(s.c_str()); }
-void mexWarnMsgTxt(const std::string s) { mexWarnMsgTxt(s.c_str()); }
-void mexErrMsgTxt(const std::string s) { mexErrMsgTxt(s.c_str()); }
+void mexPrintf(const std::string &s) { mexPrintf(s.c_str()); }
+void mexWarnMsgTxt(const std::string &s) { mexWarnMsgTxt(s.c_str()); }
+void mexErrMsgTxt(const std::string &s) { mexErrMsgTxt(s.c_str()); }
 
 bool mxIsRealScalar(const mxArray* a) { return mxIsNumeric(a) && !mxIsComplex(a) && (mxGetNumberOfElements(a) == 1); }
 bool mxIsPositiveRealScalar(const mxArray* a) { return mxIsNumeric(a) && !mxIsComplex(a) && (mxGetNumberOfElements(a) == 1) && (mxGetScalar(a) > 0); }
@@ -91,6 +91,7 @@ void readDmaChannel(unsigned int, mxArray**, unsigned int, const mxArray **);
 vector<Command> vectorOfCommands = {
   Command("help", &PrintHelp, "", ""),
   Command("version", &getVersion, "", ""),
+  Command("nop", NULL, "", ""),
   Command("open", &openDevice, "", ""),
   Command("close", &closeDevice, "", ""),
   Command("info", &getInfo, "", ""),
