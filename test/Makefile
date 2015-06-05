@@ -9,7 +9,7 @@ LDFLAGS = $$LDFLAGS -w -std=c++0x $(DEBUG_FLAGS)
 
 export LD_LIBRARY_PATH=$(MATLAB_ROOT)/bin/glnxa64/:$LD_LIBRARY_PATH
 
-.PHONY : test test_version.m init_remote.m
+.PHONY : test test_version.m init_remote.m test_remote_init.m
 
 all : mleval mlcallmex
 
@@ -23,7 +23,7 @@ profile : mlcallmex
 	valgrind --tool=callgrind --collect-atstart=no --toggle-collect=mexFunction ./bin/mlcallmex ../bin/mtca4u_mex.mexa64 4
 	#valgrind --tool=callgrind --collect-atstart=no --toggle-collect=mexFunction ./bin/mleval "m = mtca4u(); m.read('SISL10','BOARD_WORD_FIRMWARE')"
 
-test : mleval test_version.m init_remote.m "/dev/mtcadummys0"
+test : mleval test_version.m init_remote.m test_remote_init.m "/dev/mtcadummys0"
 	ctest
 
 test_version.m :
@@ -31,6 +31,9 @@ test_version.m :
 
 init_remote.m :
 	cat init_remote.m.in | sed "{s/__USER__/"$(USER)"/}" | sed "{s|__HOME__|"$(HOME)"|}" > $@
+	
+test_remote_init.m :
+	cat test_remote_init.m.in | sed "{s/__USER__/"$(USER)"/}" | sed "{s|__HOME__|"$(HOME)"|}" > $@
 
 "/dev/mtcadummys0" : 
 	modprobe mtcadummy

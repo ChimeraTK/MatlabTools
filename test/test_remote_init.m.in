@@ -1,0 +1,7 @@
+%%
+%
+
+user = '__USER__';
+home = '__HOME__';
+
+m = mtca4u_remote('DUMMY1',cd,'localhost',user,[home, '/.ssh/id_rsa.pem']);
