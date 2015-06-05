@@ -3,13 +3,11 @@
 
 % Syntax of read:  module, register, [offset], [elements]
 
-m = mtca4u('DUMMY1');
-
 %% Check Basic read functions with know return values
 
 assert(m.read('', 'WORD_FIRMWARE') == 0, 'Wrong firmware id returned.');
 assert(m.read('', 'WORD_COMPILATION') == 9, 'Wrong compilation returned.');
-assert(m.read('', 'WORD_CLK_DUMMY') == 1145916761, 'Wrong clk_dummy returned.');
+%assert(m.read('', 'WORD_CLK_DUMMY') == 1145916761, 'Wrong clk_dummy returned.');
 
 %% Check for illegal parameter
 

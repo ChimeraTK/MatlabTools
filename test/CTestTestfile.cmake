@@ -1,7 +1,14 @@
-ADD_TEST(test_raw "./mleval" "run test_raw.m" "-s")
-ADD_TEST(test_version "./mleval" "run test_version.m" "-s")
-ADD_TEST(test_init "./mleval" "run test_init.m" "-s")
-ADD_TEST(test_open_close "./mleval" "run test_open_close.m" "-s")
-ADD_TEST(test_read "./mleval" "run test_read.m" "-s")
-ADD_TEST(test_write "./mleval" "run test_write.m" "-s")
+ADD_TEST(mex "./mleval" "run test_mex.m" "-s")
+
+ADD_TEST(local_init "./mleval" "run test_local_init.m" "-s")
+ADD_TEST(local_open_close "./mleval" "run test_local_open_close.m" "-s")
+ADD_TEST(local_version "./mleval" "run init_local; run test_version.m" "-s")
+ADD_TEST(local_read "./mleval" "run init_local; run test_read.m" "-s")
+ADD_TEST(local_write "./mleval" "run init_local; run test_write.m" "-s")
+
+ADD_TEST(remote_init "./mleval" "run test_remote_init.m" "-s")
+ADD_TEST(remote_version "./mleval" "run init_remote; run test_version.m" "-s")
+ADD_TEST(remote_read "./mleval" "run init_remote; run test_read.m" "-s")
+ADD_TEST(remote_write "./mleval" "run init_remote; run test_write.m" "-s")
+
 

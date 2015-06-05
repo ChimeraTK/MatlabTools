@@ -1,4 +1,4 @@
-classdef mtca4u
+classdef mtca4u < mtca4u_interface
   %mtca4u Wrapper class for the MicroTCA4u API
   %   
   % mtca4u Methods:
