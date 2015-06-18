@@ -433,8 +433,8 @@ void getRegisterInfo(unsigned int nlhs, mxArray *plhs[], unsigned int nrhs, cons
   if (!mxIsChar(prhs[1])) mexErrMsgTxt("Invalid " +  getOrdinalNumerString(2) + " input argument.");
   if (!mxIsChar(prhs[2])) mexErrMsgTxt("Invalid " +  getOrdinalNumerString(2) + " input argument.");
 
-  devMap<devPCIE>::RegisterAccessor reg = device->getRegisterAccessor(mxArrayToStdString(prhs[2]), mxArrayToStdString(prhs[1]));
-  mapFile::mapElem regInfo = reg.getRegisterInfo();
+  boost::shared_ptr<devMap<devPCIE>::RegisterAccessor> reg = device->getRegisterAccessor(mxArrayToStdString(prhs[2]), mxArrayToStdString(prhs[1]));
+  mapFile::mapElem regInfo = reg->getRegisterInfo();
 
   //mwSize dims[2] = {1, 1};
   const char *field_names[] = {"name", "elements", "signed", "bits", "fractional_bits", "description"};
@@ -476,10 +476,10 @@ void getRegisterSize(unsigned int nlhs, mxArray *plhs[], unsigned int nrhs, cons
   if (!mxIsChar(prhs[1])) mexErrMsgTxt("Invalid " +  getOrdinalNumerString(1) + " input argument.");
   if (!mxIsChar(prhs[2])) mexErrMsgTxt("Invalid " +  getOrdinalNumerString(2) + " input argument.");
 
-  devMap<devPCIE>::RegisterAccessor reg = device->getRegisterAccessor(mxArrayToStdString(prhs[2]), mxArrayToStdString(prhs[1]));
+  boost::shared_ptr<devMap<devPCIE>::RegisterAccessor> reg = device->getRegisterAccessor(mxArrayToStdString(prhs[2]), mxArrayToStdString(prhs[1]));
 
   plhs[0] = mxCreateDoubleMatrix(1, 1, mxREAL);
-  (*mxGetPr(plhs[0])) = reg.getRegisterInfo().reg_elem_nr;
+  (*mxGetPr(plhs[0])) = reg->getRegisterInfo().reg_elem_nr;
 }
 
 /**
@@ -506,16 +506,16 @@ void readRegister(unsigned int nlhs, mxArray *plhs[], unsigned int nrhs, const m
   if ((nrhs > pp_elements) && !mxIsPositiveRealScalar(prhs[pp_elements]))
     mexErrMsgTxt("Invalid " + getOrdinalNumerString(pp_elements) + " input argument.");
 	
-  devMap<devPCIE>::RegisterAccessor reg = device->getRegisterAccessor(mxArrayToStdString(prhs[pp_register]),mxArrayToStdString(prhs[pp_module]));
+  boost::shared_ptr<devMap<devPCIE>::RegisterAccessor> reg = device->getRegisterAccessor(mxArrayToStdString(prhs[pp_register]),mxArrayToStdString(prhs[pp_module]));
 
   const uint32_t offset = (nrhs > pp_offset) ? mxGetScalar(prhs[pp_offset]) : 0;
   //if(offset == 0) mexErrMsgTxt("Subscript indices must be real positive integers. Instead of C/C++ the first element in MATLAB is 1.");
   
-  const uint32_t elements = (nrhs > pp_elements) ? mxGetScalar(prhs[pp_elements]) : (reg.getRegisterInfo().reg_elem_nr - offset);
+  const uint32_t elements = (nrhs > pp_elements) ? mxGetScalar(prhs[pp_elements]) : (reg->getRegisterInfo().reg_elem_nr - offset);
 
   plhs[0] = mxCreateDoubleMatrix(1, elements, mxREAL);
   double *plhsValue = mxGetPr(plhs[0]);
-  reg.read(plhsValue, elements, offset);
+  reg->read(plhsValue, elements, offset);
 }
 
 /**
@@ -541,23 +541,23 @@ void writeRegister(unsigned int, mxArray **, unsigned int nrhs, const mxArray *p
   if ((nrhs > pp_offset) && (!mxIsRealScalar(prhs[pp_offset]) ||(mxGetScalar(prhs[pp_offset]) < 0)))
     mexErrMsgTxt("Invalid " + getOrdinalNumerString(pp_offset) + " input argument.");
 
-  devMap<devPCIE>::RegisterAccessor reg = device->getRegisterAccessor(mxArrayToStdString(prhs[pp_register]), mxArrayToStdString(prhs[pp_module]));
+  boost::shared_ptr<devMap<devPCIE>::RegisterAccessor> reg = device->getRegisterAccessor(mxArrayToStdString(prhs[pp_register]), mxArrayToStdString(prhs[pp_module]));
 
   const uint32_t offset = (nrhs > pp_offset) ? mxGetScalar(prhs[pp_offset]) : 0;
   
   double *prhsValue = mxGetPr(prhs[pp_value]);
   size_t prhsValueElements = mxGetNumberOfElements(prhs[pp_value]);
-  reg.write(prhsValue, prhsValueElements, offset);
+  reg->write(prhsValue, prhsValueElements, offset);
 }
 
 /**
  * @brief readRawDmaData
  *
  */
-template<class T> void innerRawDMARead(const devMap<devPCIE>::RegisterAccessor &reg, double* dest, const size_t nElements, const size_t nOffset, const FixedPointConverter &conv)
+template<class T> void innerRawDMARead(const boost::shared_ptr<devMap<devPCIE>::RegisterAccessor> &reg, double* dest, const size_t nElements, const size_t nOffset, const FixedPointConverter &conv)
 {
   std::vector<T> dmaValue(nElements);
-  reg.readDMA(reinterpret_cast<int32_t*>(&dmaValue[0]), nElements*sizeof(T), nOffset);
+  reg->readDMA(reinterpret_cast<int32_t*>(&dmaValue[0]), nElements*sizeof(T), nOffset);
 
   // copy and transform data
   for(unsigned int i = 0; i < nElements; i++)
@@ -592,10 +592,10 @@ void readDmaRaw(unsigned int nlhs, mxArray *plhs[], unsigned int nrhs, const mxA
   if ((nrhs > pp_bit) && !mxIsPositiveRealScalar(prhs[pp_bit])) mexErrMsgTxt("Invalid " + getOrdinalNumerString(pp_bit) + " input argument.");
   if ((nrhs > pp_fracbit) && !mxIsRealScalar(prhs[pp_fracbit])) mexErrMsgTxt("Invalid " + getOrdinalNumerString(pp_fracbit) + " input argument.");
   
-  devMap<devPCIE>::RegisterAccessor reg = device->getRegisterAccessor(mxArrayToStdString(prhs[pp_register]), mxArrayToStdString(prhs[pp_module]));
+  boost::shared_ptr<devMap<devPCIE>::RegisterAccessor> reg = device->getRegisterAccessor(mxArrayToStdString(prhs[pp_register]), mxArrayToStdString(prhs[pp_module]));
   
   const uint32_t offset = (nrhs > pp_offset) ? mxGetScalar(prhs[pp_offset]) : 0;
-  const uint32_t elements = (nrhs > pp_elements) ? mxGetScalar(prhs[pp_elements]) : (reg.getRegisterInfo().reg_elem_nr - offset);
+  const uint32_t elements = (nrhs > pp_elements) ? mxGetScalar(prhs[pp_elements]) : (reg->getRegisterInfo().reg_elem_nr - offset);
     
   const uint32_t mode = (nrhs > pp_mode) ? mxGetScalar(prhs[pp_mode]): 32;
   if ((mode != 32) && (mode != 16)) mexErrMsgTxt("Invalid data mode.");
@@ -647,10 +647,10 @@ void readDmaChannel(unsigned int nlhs, mxArray *plhs[], unsigned int nrhs, const
   if ((nrhs > pp_bit) && !mxIsPositiveRealScalar(prhs[pp_bit])) mexErrMsgTxt("Invalid " + getOrdinalNumerString(pp_bit) + " input argument.");
   if ((nrhs > pp_fracbit) && !mxIsRealScalar(prhs[pp_fracbit])) mexErrMsgTxt("Invalid " + getOrdinalNumerString(pp_fracbit) + " input argument.");
   
-  devMap<devPCIE>::RegisterAccessor reg = device->getRegisterAccessor(mxArrayToStdString(prhs[pp_register]),mxArrayToStdString(prhs[pp_module]));
+  boost::shared_ptr<devMap<devPCIE>::RegisterAccessor> reg = device->getRegisterAccessor(mxArrayToStdString(prhs[pp_register]),mxArrayToStdString(prhs[pp_module]));
   
   const uint32_t offset = (nrhs > pp_offset) ? mxGetScalar(prhs[pp_offset]): 0;
-  const uint32_t elements = (nrhs > pp_elements) ? mxGetScalar(prhs[pp_elements]) : (reg.getRegisterInfo().reg_elem_nr - offset);
+  const uint32_t elements = (nrhs > pp_elements) ? mxGetScalar(prhs[pp_elements]) : (reg->getRegisterInfo().reg_elem_nr - offset);
   
   const uint32_t totalChannels = (nrhs > pp_channel_cnt) ? mxGetScalar(prhs[pp_channel_cnt]) : 8;
   if ((totalChannels != 8) && (totalChannels != 16)) mexErrMsgTxt("Invalid number of channels.");
