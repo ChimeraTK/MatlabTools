@@ -2,7 +2,7 @@ Source: mtca4u-matlab-tools
 Section: utils
 Priority: extra
 Maintainer: __USER_NAME__ <__EMAIL__>
-Build-Depends: debhelper (>= 7), dev-mtcamappeddevice (>= 0.13.00)
+Build-Depends: debhelper (>= 7), dev-mtcamappeddevice (>= 0.17.00)
 #FIXME: The dependency on Matlab is missing, could not figure out the package
 Standards-Version: 3.8.1
 
