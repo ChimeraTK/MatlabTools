@@ -251,6 +251,33 @@ classdef mtca4u < mtca4u_interface
             error(ex.message);
           end
         end
+        
+        function [varargout] = read_seq(obj, varargin)
+        %mtca4u.read_seq - Reads data from a multiplexed sequence
+        %             
+        % Syntax:
+        %    [data] = mtca4u(board).read_seq(module, register, sequence)
+        %    [data] = mtca4u.read_seq(module, register, sequence, offset, elements)
+        %    [sequence1, sequence2, ...] = mtca4u.read_seq(module, register, [1, 2 ...], offset, elements)
+        %    ...
+        %
+        % Inputs:
+        %    board - Name of the board
+        %    register - Name of the register
+        %    sequence - Number of the sequence
+        %    offset - Offset into the sequence
+        %    elements - Number of samples to read (optional, default: all available)
+        %
+        % Outputs:
+        %    data - Values of the sequence(s)
+        %
+        % See also: mtca4u, mtca4u.read, mtca4u.write
+          try
+            [varargout{1:nargout}] = mtca4u_mex('read_seq', obj.handle, varargin{:});
+          catch ex
+            error(ex.message);
+          end
+        end
     end
 end
 

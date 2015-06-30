@@ -21,11 +21,15 @@
 
 #include <MtcaMappedDevice/dmapFilesParser.h>
 #include <MtcaMappedDevice/devMap.h>
+#include <MtcaMappedDevice/MultiplexedDataAccessor.h>
 
 #include "../include/version.h"
 
 using namespace mtca4u;
 using namespace std;
+
+typedef MultiplexedDataAccessor<double> dma_accessor;
+typedef boost::shared_ptr<MultiplexedDataAccessor<double>> dma_Accessor_ptr;
 
 // Some c++ wrapper and utility functions
 
@@ -87,6 +91,7 @@ void readRegister(unsigned int, mxArray**, unsigned int, const mxArray **);
 void writeRegister(unsigned int, mxArray**, unsigned int, const mxArray **);
 void readDmaRaw(unsigned int, mxArray**, unsigned int, const mxArray **);
 void readDmaChannel(unsigned int, mxArray**, unsigned int, const mxArray **);
+void readSequence(unsigned int, mxArray**, unsigned int, const mxArray **);
 
 vector<Command> vectorOfCommands = {
   Command("help", &PrintHelp, "", ""),
@@ -103,6 +108,7 @@ vector<Command> vectorOfCommands = {
   Command("write", &writeRegister, "", ""),
   Command("read_dma_raw", &readDmaRaw, "", ""),
   Command("read_dma", &readDmaChannel, "", ""),
+  Command("read_seq", &readSequence, "", ""),
 };
 
 /**
@@ -564,7 +570,6 @@ template<class T> void innerRawDMARead(const boost::shared_ptr<devMap<devPCIE>::
     dest[i] = conv.toDouble(dmaValue[i]);
 }
 
-
 /**
  * @brief readRawDmaData
  *
@@ -653,7 +658,7 @@ void readDmaChannel(unsigned int nlhs, mxArray *plhs[], unsigned int nrhs, const
   const uint32_t elements = (nrhs > pp_elements) ? mxGetScalar(prhs[pp_elements]) : (reg->getRegisterInfo().reg_elem_nr - offset);
   
   const uint32_t totalChannels = (nrhs > pp_channel_cnt) ? mxGetScalar(prhs[pp_channel_cnt]) : 8;
-  if ((totalChannels != 8) && (totalChannels != 16)) mexErrMsgTxt("Invalid number of channels.");
+  //if ((totalChannels != 8) && (totalChannels != 16)) mexErrMsgTxt("Invalid number of channels.");
   
   const uint32_t mode = (nrhs > pp_mode) ? mxGetScalar(prhs[pp_mode]) : 32;
   if ((mode != 32) && (mode != 16)) mexErrMsgTxt("Invalid data mode.");
@@ -691,23 +696,102 @@ void readDmaChannel(unsigned int nlhs, mxArray *plhs[], unsigned int nrhs, const
   // Store data in lhs matrix
   else
   {
-    unsigned int SelectedChannels = (nrhs > pp_channel) ? mxGetNumberOfElements(prhs[pp_channel]) : totalChannels;
-    plhs[0] = mxCreateDoubleMatrix(elements, SelectedChannels, mxREAL);
+    unsigned int selectedChannels = (nrhs > pp_channel) ? mxGetNumberOfElements(prhs[pp_channel]) : totalChannels; 
+    plhs[0] = mxCreateDoubleMatrix(elements, selectedChannels, mxREAL);
     double *plhsValue = mxGetPr(plhs[0]);
     
     // copy and transform data
-    for(unsigned int ic = 0; ic < SelectedChannels; ic++)
+    for(unsigned int ic = 0; ic < selectedChannels; ic++)
     {
-      unsigned int currentChannel = (nrhs > 1) ? (mxGetPr(prhs[2])[ic] - 1) : ic;
+      unsigned int currentChannel = (nrhs > pp_channel) ? (mxGetPr(prhs[pp_channel])[ic] - 1) : ic;
       for(unsigned int is = 0; is < elements; is++)
       {
         unsigned int plhsIndex = ic*elements + is;
         unsigned int dmaIndex = is*totalChannels + currentChannel;
 
-        if (dmaIndex >= size) mexErrMsgTxt("Data storage indexing went wrong!");
-        if (plhsIndex >= elements*SelectedChannels) mexErrMsgTxt("Data storage indexing went wrong!");
+        if (dmaIndex >= size) mexErrMsgTxt("Data storage indexing went wrong! (1)");
+        if (plhsIndex >= elements*selectedChannels) mexErrMsgTxt("Data storage indexing went wrong! (2)");
 
         plhsValue[plhsIndex] = (currentChannel < totalChannels) ? dmaValue[dmaIndex] : 0;
+      }
+    }
+  }
+}
+
+/**
+ * @brief readSequence
+ *
+ * Parameter: device, module, register, [channel], [offset], [elements], [channel]
+ */
+void readSequence(unsigned int nlhs, mxArray *plhs[], unsigned int nrhs, const mxArray *prhs[])
+{
+  static const unsigned int pp_device = 0, pp_module = 1, pp_register = 2, pp_channel = 3, pp_offset = 4, pp_elements = 5;
+  
+  if (nrhs < 3) mexErrMsgTxt("Not enough input arguments.");
+  if (nrhs > 6) mexWarnMsgTxt("Too many input arguments.");
+    
+  boost::shared_ptr< devMap<devPCIE> > device = getDevice(prhs[pp_device]);
+   
+  if (!mxIsChar(prhs[pp_module])) mexErrMsgTxt("Invalid " + getOrdinalNumerString(pp_module) + " input argument.");
+  if (!mxIsChar(prhs[pp_register])) mexErrMsgTxt("Invalid " + getOrdinalNumerString(pp_register) + " input argument.");
+  
+  if ((nrhs > pp_channel) && !mxIsPositiveRealVector(prhs[pp_channel])) mexErrMsgTxt("Invalid " + getOrdinalNumerString(pp_channel) + " input argument.");
+  
+  if ((nlhs > 1) && !(nrhs > pp_channel)) mexErrMsgTxt("Not enough input arguments.");
+  if ((nlhs > 1) && (nrhs > pp_channel) && (nlhs > mxGetNumberOfElements(prhs[pp_channel]))) mexErrMsgTxt("Too many output arguments.");
+  if ((nlhs > 1) && (nrhs > pp_channel) && (nlhs < mxGetNumberOfElements(prhs[pp_channel]))) mexErrMsgTxt("Not enough output arguments.");
+
+  if ((nrhs > pp_offset) && !mxIsRealScalar(prhs[pp_offset])) mexErrMsgTxt("Invalid " + getOrdinalNumerString(pp_offset) + " input argument.");
+  if ((nrhs > pp_elements) && !mxIsPositiveRealScalar(prhs[pp_elements])) mexErrMsgTxt("Invalid " + getOrdinalNumerString(pp_elements) + " input argument.");
+  
+  boost::shared_ptr<MultiplexedDataAccessor<double>> reg = device->getCustomAccessor<MultiplexedDataAccessor<double>>(mxArrayToStdString(prhs[pp_register]),mxArrayToStdString(prhs[pp_module]));
+  reg->read();
+  
+  const uint32_t offset = (nrhs > pp_offset) ? mxGetScalar(prhs[pp_offset]): 0;
+  const uint32_t elements = (nrhs > pp_elements) ? mxGetScalar(prhs[pp_elements]) : ((*reg)[0].size());
+  
+  const uint32_t totalChannels = reg->getNumberOfDataSequences();
+   
+  const uint32_t size = elements*totalChannels;
+  std::vector<double> dmaValue(size);
+   
+  unsigned int selectedChannels = (nrhs > pp_channel) ? mxGetNumberOfElements(prhs[pp_channel]) : totalChannels;    
+  // Store data in different vectors passed over lhs
+  if (nlhs == selectedChannels)
+  {
+    for(unsigned int ic = 0; ic < nlhs; ic++)
+    {
+      plhs[ic] = mxCreateDoubleMatrix(elements, 1, mxREAL);
+      double *plhsValue = mxGetPr(plhs[ic]);
+      unsigned int currentChannel = (nrhs > pp_channel) ? (mxGetPr(prhs[pp_channel])[ic] - 1) : ic;
+
+      for(unsigned int is = 0; is < elements; is++)
+      {
+        unsigned int seqIndex = (is+offset);
+        if (seqIndex >= size) mexErrMsgTxt("Data storage indexing went wrong!");
+        plhsValue[is] = (*reg)[currentChannel][seqIndex];
+      }
+    }
+  }
+  // Store data in lhs matrix
+  else
+  {
+    plhs[0] = mxCreateDoubleMatrix(elements, selectedChannels, mxREAL);
+    double *plhsValue = mxGetPr(plhs[0]);
+    
+    // copy and transform data
+    for(unsigned int ic = 0; ic < selectedChannels; ic++)
+    {
+      unsigned int currentChannel = (nrhs > pp_channel) ? (mxGetPr(prhs[pp_channel])[ic] - 1) : ic;
+      for(unsigned int is = 0; is < elements; is++)
+      {
+        unsigned int plhsIndex = ic*elements + is;
+        unsigned int seqIndex = (is+offset);        
+
+        if (seqIndex >= size) mexErrMsgTxt("Data storage indexing went wrong! (1)");
+        if (plhsIndex >= elements*selectedChannels) mexErrMsgTxt("Data storage indexing went wrong! (2)");
+
+        plhsValue[plhsIndex] = (*reg)[currentChannel][seqIndex];
       }
     }
   }

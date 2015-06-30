@@ -317,6 +317,40 @@ classdef mtca4u_remote < mtca4u_interface
           channel2.close();
         end
         
+        function result = read_seq(obj, varargin)
+        %mtca4u.read_seq - Reads data from a multiplexed sequence
+        %             
+        % Syntax:
+        %    [data] = mtca4u.read_seq(module, register)
+        %    [data] = mtca4u.read_dma(module, register, sequence)
+        %    [data] = mtca4u.read_dma(module, register, sequence, offset)
+        %    [data] = mtca4u.read_dma(module, register, sequence, offset, elements)
+        %    ...
+        %
+        % Inputs:
+        %    module - Name of the module (if none: '')
+        %    register - Name of the register
+        %    sequence - Number of the sequence to read (optional)
+        %    offset - Offset into the sequence (optional)
+        %    elements - Number of elements to read (optional)
+        %
+        % Outputs:
+        %    data - Values of the sequence(s)
+        %
+        % See also: mtca4u, mtca4u.read, mtca4u.write
+          cmd = ['cd ''', obj.path, ''' && mtca4u read_seq ', obj.board, ' ', createCLTString(obj, varargin)];
+          if obj.debug, disp(['Run: ', cmd]); end
+          channel2  =  obj.channel.openSession();
+          channel2.execCommand(cmd);
+          result  =  ReadStdout(obj, channel2);
+          % Handle an Error
+          if(channel2.getExitStatus() ~= 0)
+            channel2.close();
+            error(['Failed to read remote value: ', ReadStderr(obj, channel2)]);
+          end
+          channel2.close();
+        end
+        
     end
 end
 
