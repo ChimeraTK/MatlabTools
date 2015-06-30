@@ -1,2 +1,3 @@
 bin/* local/lib/
 matlab/mtca4u.m local/lib/
+matlab/mtca4u_interface.m local/lib/
