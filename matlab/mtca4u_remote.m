@@ -35,7 +35,7 @@ classdef mtca4u_remote < mtca4u_interface
 		board = [];
         channel = 0;
         c;
-        expected_tools_version = '1';
+        expected_tools_version = '00.05.00';
     end
     
     methods (Access = 'private')
@@ -52,8 +52,14 @@ classdef mtca4u_remote < mtca4u_interface
             stdout = ch.ethz.ssh2.StreamGobbler(channel.getStdout());
             br = java.io.BufferedReader(java.io.InputStreamReader(stdout));
             while(true)
-                line = br.readLine();
-                if(isempty(line)), break, else res = [res, str2double(char(line))]; end
+                line = char(br.readLine());
+                if(isempty(line))
+                    break
+                elseif (isnumeric(line))
+                  res = [res, str2double(line)];
+                else
+                  res = [res, line];
+                end
             end
             channel.close();
         end
@@ -148,37 +154,51 @@ classdef mtca4u_remote < mtca4u_interface
             % Check tools version
             channel2 = obj.channel.openSession();
             channel2.execCommand('mtca4u version');
-            result = ReadStdout(obj, channel2);
-            %warning(['Wrong command line tools installed on create cpu. Expected ''', obj.expected_tools_version,''' but found ''', result]);
+            version = ReadStdout(obj, channel2);
+            if ~strcmp(version, obj.expected_tools_version)
+              warning(['Wrong command line tools installed on create cpu. Expected ''', obj.expected_tools_version,''' but found ''', version]);
+            end
             channel2.close();
         end
         
-        function ver = version(~)
+        function result = version(obj,~)
         %mtca4u_remote.version - Shows the version of the remote tools
         %
-            ver = [];
+          cmd = ['cd ''', obj.path, ''' && mtca4u version'];
+          if obj.debug, disp(['Run: ', cmd]); end
+          channel2 = obj.channel.openSession();
+          channel2.execCommand(cmd);
+          result = ReadStdout(obj, channel2);
+          % Handle an Error
+          if(channel2.getExitStatus() ~= 0)
+            channel2.close();
+            error(['Failed to read remote value: ', ReadStderr(obj, channel2)]);
+          end
+          channel2.close();
         end
         
         function ver = print_info(obj, varargin)
         %mtca4u_remote.print_info - 
         %
-            
+        error('Not Implemented yet.');    
         end
         
         function ver = print_device_info(obj, varargin)
         %mtca4u_remote.print_info - 
         %
-            
+          error('Not Implemented yet.');   
         end
         
         function ver = print_register_info(obj, varargin)
         %mtca4u_remote.print_info - 
         %
-            
+          error('Not Implemented yet.');   
         end
         
         function s = get_register_size(obj, varargin)
-            
+        %mtca4u_remote.get_register_size -
+        %
+          error('Not Implemented yet.');   
         end
         
         function result = read(obj, varargin)
@@ -266,6 +286,7 @@ classdef mtca4u_remote < mtca4u_interface
         %    data - Value/s of the DAQ Block
         %
         % See also: mtca4u, mtcau4.read
+		    error('Not Implemented yet.'); 
             cmd = ['cd ''', obj.path, ''' && mtca4u read_dma_raw ', obj.board, ' ', createCLTString(obj, varargin)];
             if obj.debug, disp(['Run: ', cmd]); end
             channel2 = obj.channel.openSession();
@@ -306,6 +327,7 @@ classdef mtca4u_remote < mtca4u_interface
         %    data - Value/s of the DAQ Block
         %
         % See also: mtca4u, mtca4u.read, mtca4u.write
+		  error('Not Implemented yet.'); 
           cmd = ['cd ''', obj.path, ''' && mtca4u read_dma ', obj.board, ' ', createCLTString(obj, varargin)];
           if obj.debug, disp(['Run: ', cmd]); end
           channel2  =  obj.channel.openSession();
@@ -341,6 +363,7 @@ classdef mtca4u_remote < mtca4u_interface
         %    data - Values of the sequence(s)
         %
         % See also: mtca4u, mtca4u.read, mtca4u.write
+		  error('Not Implemented yet.'); 
           cmd = ['cd ''', obj.path, ''' && mtca4u read_seq ', obj.board, ' ', createCLTString(obj, varargin)];
           if obj.debug, disp(['Run: ', cmd]); end
           channel2  =  obj.channel.openSession();
