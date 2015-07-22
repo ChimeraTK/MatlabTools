@@ -124,7 +124,8 @@ classdef mtca4u < mtca4u_interface
         %mtca4u.get_register_size - Return the number of elements in the register
         %
         % Syntax:
-        %    mtca4u.get_register_size(module, register)
+        %    % board = mtca4u('board');  
+        %    board.get_register_size(module, register)
         %
         % Inputs:
         %    module - Name of the module
@@ -142,14 +143,15 @@ classdef mtca4u < mtca4u_interface
         %mtca4u.read - Reads data from the register of a board
         %
         % Syntax:
-        %    [data] = mtca4u.read(module, register)
-        %    [data] = mtca4u.read(module, register, offset, elements)
+        %    % board = mtca4u('board'); 
+        %    [data] = board.read(module, register)
+        %    [data] = d.read(module, register, offset, elements)
         %    ...
         %
         % Inputs:
-        %    board - Name of the board
+        %    module - Name of the module
         %    register - Name of the register
-		%    offset - Start element of the reading (optional, default: 1)
+	     %    offset - Start element of the reading (optional, default: 1)
         %    elements - Number of elements to be read (optional, default: 'numel(offset:end)')
         %
         % Outputs:
@@ -167,18 +169,19 @@ classdef mtca4u < mtca4u_interface
         %mtca4u.write - Writes data to the register of a board
         %
         % Syntax:
-        %    mtca4u.write(module, register, value)
-        %    mtca4u.write(module, register, value, offset)
+        %    % board = mtca4u('board'); 
+        %    board.write(module, register, value)
+        %    board.write(module, register, value, offset)
         %    ...
         %
         % Inputs:
-        %    board - Name of the board
+        %    module - Name of the board
         %    register - Name of the register
         %    value - Value or Vector to be written
         %    offset - Start element of the writing (optional, default: 1)
-		%
-		% Examples:
-		%    mtca4('SISL').write('BOARD', 'WORD_REGISTER', bin2dec('00101'));
+		  %
+	     % Examples:
+	     %    mtca4('SISL').write('BOARD', 'WORD_REGISTER', bin2dec('00101'));
         %
         % See also: mtca4u, mtca4u.read
             try
@@ -192,14 +195,15 @@ classdef mtca4u < mtca4u_interface
         %mtca4u.read_dma_raw - Reads data from a board using direct memory access
         %
         % Syntax:
-        %    [data] = mtca4u.read_dma_raw(module, register)
-        %    [data] = mtca4u.read_dma_raw(module, register, offset)
-        %    [data] = mtca4u.read_dma_raw(module, register, offset, elements, mode)
-        %    [data] = mtca4u.read_dma_raw(module, register, offset, elements, mode, singed, bit, fracbit)
+        %    % board = mtca4u('board'); 
+        %    [data] = board.read_dma_raw(module, register)
+        %    [data] = board.read_dma_raw(module, register, offset)
+        %    [data] = board.read_dma_raw(module, register, offset, elements, mode)
+        %    [data] = board.read_dma_raw(module, register, offset, elements, mode, singed, bit, fracbit)
         %    ...
         %
         % Inputs:
-        %    board - Name of the board
+        %    module - Name of the module
         %    register - Name of the register
         %    offset - Start element of the writing (optional, default: 1)
         %    elements - Number of elements to be read (optional, default: 'numel(offset:end)')
@@ -223,16 +227,17 @@ classdef mtca4u < mtca4u_interface
         %mtca4u.read_dma - Reads data from a board using direct memory access
         %             
         % Syntax:
-        %    [data] = mtca4u(board).read_dma(module, register, channel)
-        %    [data] = mtca4u.read_dma(module, register, channel, offset, elements)
-        %    [data] = mtca4u.read_dma(module, register, channel, offset, elements)
-        %    [data] = mtca4u.read_dma(module, register, channel, offset, elements, mode, signed, bit, fracbit)
-        %    [channel1, channel2, ...] = mtca4u.read_dma(module, register, [1, 2 ...], offset, elements)
-        %    [channel1, channel2, ...] = mtca4u.read_dma(module, register, [1, 2 ...], offset, elements, mode, signed, bit, fracbit)
+        %    % board = mtca4u('board'); 
+        %    [data] = board.read_dma(module, register, channel)
+        %    [data] = board.read_dma(module, register, channel, offset, elements)
+        %    [data] = board.read_dma(module, register, channel, offset, elements)
+        %    [data] = board.read_dma(module, register, channel, offset, elements, mode, signed, bit, fracbit)
+        %    [channel1, channel2, ...] = board.read_dma(module, register, [1, 2 ...], offset, elements)
+        %    [channel1, channel2, ...] = board.read_dma(module, register, [1, 2 ...], offset, elements, mode, signed, bit, fracbit)
         %    ...
         %
         % Inputs:
-        %    board - Name of the board
+        %    module - Name of the module
         %    register - Name of the register
         %    channel - Channel of the DAQ Block
         %    sample - Amount of sample to read (optional, default: all available)
@@ -256,13 +261,14 @@ classdef mtca4u < mtca4u_interface
         %mtca4u.read_seq - Reads data from a multiplexed sequence
         %             
         % Syntax:
-        %    [data] = mtca4u(board).read_seq(module, register, sequence)
-        %    [data] = mtca4u.read_seq(module, register, sequence, offset, elements)
+        %    % board = mtca4u('board'); 
+        %    [data] = board.read_seq(module, register, sequence)
+        %    [data] = board.read_seq(module, register, sequence, offset, elements)
         %    [sequence1, sequence2, ...] = mtca4u.read_seq(module, register, [1, 2 ...], offset, elements)
         %    ...
         %
         % Inputs:
-        %    board - Name of the board
+        %    module - Name of the module
         %    register - Name of the register
         %    sequence - Number of the sequence
         %    offset - Offset into the sequence
