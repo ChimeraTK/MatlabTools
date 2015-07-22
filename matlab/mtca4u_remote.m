@@ -128,14 +128,14 @@ classdef mtca4u_remote < mtca4u_interface
                 obj.c = onCleanup(@()delete(obj));
                 obj.channel = ch.ethz.ssh2.Connection(hostName);
                 obj.channel.connect();
-				obj.board = board();
+                obj.board = board();
                 obj.path = path;
                 disp('Connection established...');
             catch
                 error('Error: Could not connect to the remote machine %s.',hostName);
             end
             % Authentication
-            if (isempty(id_file))       
+            if (~exist('id_file','var'))       
                 if(~obj.channel.authenticateWithPassword(userName,passcode()))
                     error('Error: Could not authenticate the connection.');
                 end
