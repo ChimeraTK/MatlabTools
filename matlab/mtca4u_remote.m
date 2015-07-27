@@ -53,12 +53,14 @@ classdef mtca4u_remote < mtca4u_interface
             br = java.io.BufferedReader(java.io.InputStreamReader(stdout));
             while(true)
                 line = char(br.readLine());
-                if(isempty(line))
+                if(isempty(line)) % break if string is empty
                     break
-                elseif (isnumeric(line))
-                  res = [res, str2double(line)];
-                else
+                end
+                number = str2double(line);
+                if (isnan(number))
                   res = [res, line];
+                else
+                  res = [res, number];
                 end
             end
             channel.close();
@@ -195,10 +197,28 @@ classdef mtca4u_remote < mtca4u_interface
           error('Not Implemented yet.');   
         end
         
-        function s = get_register_size(obj, varargin)
-        %mtca4u_remote.get_register_size -
+        function result = get_register_size(obj, varargin)
+        %mtca4u_remote.get_register_size - Return the number of elements in the register
         %
-          error('Not Implemented yet.');   
+        % Syntax:
+        %    % board = mtca4u('board');  
+        %    board.get_register_size(module, register)
+        %
+        % Inputs:
+        %    module - Name of the module
+        %    register - Name of the register
+        %
+          cmd = ['cd ''', obj.path, ''' && mtca4u register_size ', obj.board, ' ', createCLTString(obj, varargin)];
+          if obj.debug, disp(['Run: ', cmd]); end
+          channel2 = obj.channel.openSession();
+          channel2.execCommand(cmd);
+          result = ReadStdout(obj, channel2);
+          % Handle an Error
+          if(channel2.getExitStatus() ~= 0)
+            channel2.close();
+            error(['Failed to read remote register size: ', ReadStderr(obj, channel2)]);
+          end
+          channel2.close();   
         end
         
         function result = read(obj, varargin)
@@ -264,42 +284,6 @@ classdef mtca4u_remote < mtca4u_interface
             channel2.close();
         end
 
-        function result = read_dma_raw(obj, varargin)
-        %mtca4u.read_dma_raw - Reads data from a board using direct memory access
-        %
-        % Syntax:
-        %    % board = mtca4u(...); 
-        %    [data] = board.read_dma(module, register, sample)
-        %    [data] = board.read_dma(module, register, sample, mode)
-        %    [data] = board.read_dma(module, register, sample, mode, singed, bit, fracbit)
-        %
-        % Inputs:
-        %    module - Name of the module (if none use: '')
-        %    register - Name of the register
-        %    sample - Number of sample to be read
-        %    mode - Data mode of 16 or 32bit (optional, default: 32)
-        %    singed - Data mode of 16 or 32bit (optional, default: false)
-        %    bit - Data mode of 16 or 32bit (optional, default: mode)
-        %    fracbit - Data mode of 16 or 32bit (optional, default: 0)
-        %
-        % Outputs:
-        %    data - Value/s of the DAQ Block
-        %
-        % See also: mtca4u, mtcau4.read
-		    error('Not Implemented yet.'); 
-            cmd = ['cd ''', obj.path, ''' && mtca4u read_dma_raw ', obj.board, ' ', createCLTString(obj, varargin)];
-            if obj.debug, disp(['Run: ', cmd]); end
-            channel2 = obj.channel.openSession();
-            channel2.execCommand(cmd);
-            result = ReadStdout(obj, channel2);
-            % Handle an Error
-            if(channel2.getExitStatus() ~= 0)
-                channel2.close();
-                error(['Failed to read remote value: ', ReadStderr(obj, channel2)]);
-            end
-            channel2.close();
-        end
-
         function result = read_dma(obj, varargin)
         %mtca4u.read_dma - Reads data from a board using direct memory access
         %             
@@ -327,7 +311,6 @@ classdef mtca4u_remote < mtca4u_interface
         %    data - Value/s of the DAQ Block
         %
         % See also: mtca4u, mtca4u.read, mtca4u.write
-		  error('Not Implemented yet.'); 
           cmd = ['cd ''', obj.path, ''' && mtca4u read_dma ', obj.board, ' ', createCLTString(obj, varargin)];
           if obj.debug, disp(['Run: ', cmd]); end
           channel2  =  obj.channel.openSession();
@@ -363,7 +346,6 @@ classdef mtca4u_remote < mtca4u_interface
         %    data - Values of the sequence(s)
         %
         % See also: mtca4u, mtca4u.read, mtca4u.write
-		  error('Not Implemented yet.'); 
           cmd = ['cd ''', obj.path, ''' && mtca4u read_seq ', obj.board, ' ', createCLTString(obj, varargin)];
           if obj.debug, disp(['Run: ', cmd]); end
           channel2  =  obj.channel.openSession();

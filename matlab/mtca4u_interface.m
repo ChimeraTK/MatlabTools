@@ -25,7 +25,6 @@ classdef mtca4u_interface
       s = get_register_size(obj, varargin);
       varargout = read(obj, varargin);
       write(obj, varargin);
-      read_dma_raw(obj, varargin);
       read_dma(obj, varargin);
       read_seq(obj, varargin);
     end
