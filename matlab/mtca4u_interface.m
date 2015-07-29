@@ -18,15 +18,15 @@ classdef mtca4u_interface
   % Last revision: 27-May-2014
    
    methods (Abstract)
-        ver = version(obj);
-        print_info(obj, varargin);
-        print_device_info(obj, varargin);
-        print_register_info(obj, varargin);
-        s = get_register_size(obj, varargin);
-        varargout = read(obj, varargin);
-		write(obj, varargin);
-		read_dma_raw(obj, varargin);
-		read_dma(obj, varargin);
+      ver = version(obj);
+      print_info(obj, varargin);
+      print_device_info(obj, varargin);
+      print_register_info(obj, varargin);
+      s = get_register_size(obj, varargin);
+      varargout = read(obj, varargin);
+      write(obj, varargin);
+      read_dma(obj, varargin);
+      read_seq(obj, varargin);
     end
 end
 
