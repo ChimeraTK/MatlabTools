@@ -9,7 +9,8 @@ classdef mtca4u < mtca4u_interface
   %   read - Reads data from the register of a board
   %   write - Writes data to the register of a board
   %   read_dma_raw - Reads raw data from a board using direct memory access
-  %   read_dma - Reads channel data from a board using direct memory access
+  %   read_dma - Reads data from a board using direct memory access
+  %   read_seq - Reads a sequence from the dma area
   %
   
   % Autor:
@@ -251,6 +252,7 @@ classdef mtca4u < mtca4u_interface
         %
         % See also: mtca4u, mtca4u.read, mtca4u.write
           try
+		    warning('Deprecated function. Consider using read_seq');
             [varargout{1:nargout}] = mtca4u_mex('read_dma', obj.handle, varargin{:});
           catch ex
             error(ex.message);

@@ -721,7 +721,7 @@ void readDmaChannel(unsigned int nlhs, mxArray *plhs[], unsigned int nrhs, const
 /**
  * @brief readSequence
  *
- * Parameter: device, module, register, [channel], [offset], [elements], [channel]
+ * Parameter: device, module, register, [channel], [offset], [elements]
  */
 void readSequence(unsigned int nlhs, mxArray *plhs[], unsigned int nrhs, const mxArray *prhs[])
 {
@@ -783,6 +783,9 @@ void readSequence(unsigned int nlhs, mxArray *plhs[], unsigned int nrhs, const m
     for(unsigned int ic = 0; ic < selectedChannels; ic++)
     {
       unsigned int currentChannel = (nrhs > pp_channel) ? (mxGetPr(prhs[pp_channel])[ic] - 1) : ic;
+	  
+	  if (currentChannel < 0 || currentChannel >= totalChannels) mexErrMsgTxt("Illegal Channel Index");
+		  
       for(unsigned int is = 0; is < elements; is++)
       {
         unsigned int plhsIndex = ic*elements + is;
