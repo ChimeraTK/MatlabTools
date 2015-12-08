@@ -37,6 +37,16 @@ classdef mtca4u < mtca4u_interface
                 error(ex.message)
             end
 		end
+ 
+
+		function help()
+        %mtca4u.help - 
+		    try
+                mtca4u_mex('help');
+            catch ex
+                error(ex.message)
+            end
+		end		
 		
 		function print_info(~, varargin)
         %mtca4u.print_info - Displays all available boards with additional information
@@ -51,7 +61,8 @@ classdef mtca4u < mtca4u_interface
                 error(ex.message)
             end
             for i = info
-                fprintf(['Name: ', i.name, '\t Device: ', i.device, '\t Firmware: ', num2str(i.firmware), '\t Date: ', i.date, '\t Map: ', i.map, '\n']);
+                %fprintf(['Name: ', i.name, '\t Device: ', i.device, '\t Firmware: ', num2str(i.firmware), '\t Date: ', i.date, '\t Map: ', i.map, '\n']);
+                fprintf(['Name: ', i.name, '\t Device: ', i.device, '\t Map: ', i.map, '\n']);
             end
         end
    end
@@ -96,6 +107,7 @@ classdef mtca4u < mtca4u_interface
                 error(ex.message);
             end   
             for i = info
+            %fprintf(['Name: ', i.name, '\t Elements: ']);
             end
         end
 

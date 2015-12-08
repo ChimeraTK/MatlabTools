@@ -8,7 +8,7 @@ include mtca4u_matlab_version
 #You can change the path by setting the environment variable MTCA4U_DIR or
 # by calling make preceeded by the assignmet.
 # Example
-# $ MTCA4U_DIR=/home/mheuer/mtca4u_test_installation make
+MTCA4U_DIR=/space/nshehzad/work/deviceaccess
 ifdef MTCA4U_DIR
   include $(MTCA4U_DIR)/MTCA4U.CONFIG
 else
@@ -19,7 +19,7 @@ MTCA4U_MEX_FLAGS = $(MtcaMappedDevice_INCLUDE_FLAGS)\
                    $(MtcaMappedDevice_LIB_FLAGS) $(MtcaMappedDevice_RUNPATH_FLAGS)
 
 #Set up MATLAB Stuff
-MATLAB_ROOT = /opt/matlab_R2013b/
+MATLAB_ROOT = /space/nshehzad/work/Matlab/R2013b
 MEXEXT = $(shell $(MATLAB_ROOT)/bin/mexext)
 
 #Setup more stuff
