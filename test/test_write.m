@@ -42,6 +42,44 @@ assert(numel(rb) == s, 'Wrong number of elements read back');
 assert(sum(rb(1:32) ~= v) == 0, 'Wrong array read back')
 clear v rb s
 
+%% Test readback of non standard types
+
+value = int8(1:32);
+m.write('','AREA_DMAABLE', value);
+readback = m.read('','AREA_DMAABLE');
+register_size = m.get_register_size('','AREA_DMAABLE');
+
+assert(numel(readback) == register_size, 'Wrong number of elements read back');
+assert(sum(readback(1:32) ~= value) == 0, 'Wrong array read back')
+clear value readback register_size
+
+value = int16(1:32);
+m.write('','AREA_DMAABLE', value);
+readback = m.read('','AREA_DMAABLE');
+register_size = m.get_register_size('','AREA_DMAABLE');
+
+assert(numel(readback) == register_size, 'Wrong number of elements read back');
+assert(sum(readback(1:32) ~= value) == 0, 'Wrong array read back')
+clear value readback register_size
+
+
+value = int32(1:32);
+m.write('','AREA_DMAABLE', value);
+readback = m.read('','AREA_DMAABLE');
+register_size = m.get_register_size('','AREA_DMAABLE');
+
+assert(numel(readback) == register_size, 'Wrong number of elements read back');
+assert(sum(readback(1:32) ~= value) == 0, 'Wrong array read back')
+clear value readback register_size
+
+value = int64(1:32);
+m.write('','AREA_DMAABLE', value);
+readback = m.read('','AREA_DMAABLE');
+register_size = m.get_register_size('','AREA_DMAABLE');
+
+assert(numel(readback) == register_size, 'Wrong number of elements read back');
+assert(sum(readback(1:32) ~= value) == 0, 'Wrong array read back')
+clear value readback register_size
 %% Test the readback of an array with offset
 
 value = 1:1024;
