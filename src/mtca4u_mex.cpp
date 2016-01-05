@@ -578,10 +578,33 @@ void writeRegister(unsigned int, mxArray **, unsigned int nrhs, const mxArray *p
   boost::shared_ptr<Device::RegisterAccessor> reg = device->getRegisterAccessor(mxArrayToStdString(prhs[pp_register]), mxArrayToStdString(prhs[pp_module]));
 
   const uint32_t offset = (nrhs > pp_offset) ? mxGetScalar(prhs[pp_offset]) : 0;
-  
-  double *prhsValue = mxGetPr(prhs[pp_value]);
+
+  mxClassID arrayType = mxGetClassID(prhs[pp_value]);
   size_t prhsValueElements = mxGetNumberOfElements(prhs[pp_value]);
-  reg->write(prhsValue, prhsValueElements, offset);
+  void *data = mxGetData(prhs[pp_value]);
+
+  // TODO: Extract this to a method if this has to be used else where
+  if (arrayType == mxDOUBLE_CLASS) {
+    reg->write(static_cast<double *>(data), prhsValueElements, offset);
+  } else if (arrayType == mxUINT8_CLASS) {
+    reg->write(static_cast<uint8_t *>(data), prhsValueElements, offset);
+  } else if (arrayType == mxINT8_CLASS) {
+    reg->write(static_cast<int8_t *>(data), prhsValueElements, offset);
+  } else if (arrayType == mxINT16_CLASS) {
+    reg->write(static_cast<int16_t *>(data), prhsValueElements, offset);
+  } else if (arrayType == mxUINT16_CLASS) {
+    reg->write(static_cast<uint16_t *>(data), prhsValueElements, offset);
+  } else if (arrayType == mxINT32_CLASS) {
+    reg->write(static_cast<int32_t *>(data), prhsValueElements, offset);
+  } else if (arrayType == mxUINT32_CLASS) {
+    reg->write(static_cast<uint32_t *>(data), prhsValueElements, offset);
+  } else if (arrayType == mxINT64_CLASS) {
+    reg->write(static_cast<int64_t *>(data), prhsValueElements, offset);
+  } else if (arrayType == mxUINT64_CLASS) {
+    reg->write(static_cast<uint64_t *>(data), prhsValueElements, offset);
+  } else {
+    mexErrMsgTxt("Data type unsupported.");
+  }
 }
 
 /**
