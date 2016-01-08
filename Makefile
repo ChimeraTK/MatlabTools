@@ -1,4 +1,4 @@
-CFLAGS = $$CFLAGS -Wall -Wextra -Wshadow -pedantic -Wuninitialized -std=c++0x $(DEBUG_FLAGS)
+CFLAGS = $$CFLAGS -Wall -Wextra -Wshadow -pedantic -Wuninitialized -std=c++0x $(DEBUG_FLAGS) 
 CXXFLAGS = $$CXXFLAGS -Wall -Wextra -Wshadow -pedantic -Wuninitialized -std=c++0x $(DEBUG_FLAGS)
 LDFLAGS = $$LDFLAGS -w -std=c++0x $(DEBUG_FLAGS)
 
@@ -8,18 +8,22 @@ include mtca4u_matlab_version
 #You can change the path by setting the environment variable MTCA4U_DIR or
 # by calling make preceeded by the assignmet.
 # Example
-MTCA4U_DIR=/space/nshehzad/work/deviceaccess
+#MTCA4U_DIR=/home/shehzad/work/deviceaccess
 ifdef MTCA4U_DIR
   include $(MTCA4U_DIR)/MTCA4U.CONFIG
-else
-  include /usr/share/mtca4u/MTCA4U.CONFIG
+#else
+#  include /usr/local/
 endif
+
+MtcaMappedDevice_INCLUDE_FLAGS=$(shell /usr/local/bin/mtca4u-deviceaccess-config --cppflags)
+MtcaMappedDevice_LIB_FLAGS=$(shell /usr/local/bin/mtca4u-deviceaccess-config --ldflags)
+
 
 MTCA4U_MEX_FLAGS = $(MtcaMappedDevice_INCLUDE_FLAGS)\
                    $(MtcaMappedDevice_LIB_FLAGS) $(MtcaMappedDevice_RUNPATH_FLAGS)
 
 #Set up MATLAB Stuff
-MATLAB_ROOT = /space/nshehzad/work/Matlab/R2013b
+MATLAB_ROOT = /usr/local/MATLAB/R2014b
 MEXEXT = $(shell $(MATLAB_ROOT)/bin/mexext)
 
 #Setup more stuff
@@ -27,6 +31,7 @@ PWD = $(shell pwd)
 
 ### Target
 all: bin/mtca4u_mex.$(MTCA4U_MATLAB_VERSION).$(MEXEXT)
+	@echo $(MTCA4U_MATLAB_VERSION)
 	make -C test all
 
 debug:
@@ -34,14 +39,14 @@ debug:
 	make -C test debug
 
 bin/mtca4u_mex.$(MTCA4U_MATLAB_VERSION).$(MEXEXT): src/mtca4u_mex.cpp include/version.h
-#use a similar naming scheme as normal .so files with version number and symlink
-	mex CFLAGS='$(CFLAGS)' CXXFLAGS='$(CXXFLAGS)' LDFLAGS='$(LDFLAGS)' -I./include $(MTCA4U_MEX_FLAGS) \
+#use a similar naming scheme as normal .so files with version number and symlink 
+	mex CFLAGS='$(CFLAGS)' CXXFLAGS='$(CXXFLAGS)' LDFLAGS='$(LDFLAGS)' $(MTCA4U_MEX_FLAGS) \
 	-outdir bin -output mtca4u_mex.$(MTCA4U_MATLAB_VERSION) ./src/mtca4u_mex.cpp
 	(cd bin; ln -sf mtca4u_mex.$(MTCA4U_MATLAB_VERSION).$(MEXEXT) mtca4u_mex.$(MEXEXT))
 
 bin/mtca4u_mex.$(MTCA4U_MATLAB_VERSION)_d.$(MEXEXT): src/mtca4u_mex.cpp include/version.h
 #use a similar naming scheme as normal .so files with version number and symlink
-	mex CFLAGS='$(CFLAGS)' CXXFLAGS='$(CXXFLAGS)' LDFLAGS='$(LDFLAGS)' -I./include $(MTCA4U_MEX_FLAGS) \
+	mex CFLAGS='$(CFLAGS)' CXXFLAGS='$(CXXFLAGS)' LDFLAGS='$(LDFLAGS)' $(MTCA4U_MEX_FLAGS) \
 	-g -outdir bin -output mtca4u_mex.$(MTCA4U_MATLAB_VERSION)_d ./src/mtca4u_mex.cpp -D__MEX_DEBUG_MODE
 	(cd bin; ln -sf mtca4u_mex.$(MTCA4U_MATLAB_VERSION)_d.$(MEXEXT) mtca4u_mex.$(MEXEXT))
 	#needed to trick gcov:
