@@ -1,7 +1,6 @@
 CFLAGS = $$CFLAGS -Wall -Wextra -Wshadow -pedantic -Wuninitialized -std=c++0x $(DEBUG_FLAGS) 
 CXXFLAGS = $$CXXFLAGS -Wall -Wextra -Wshadow -pedantic -Wuninitialized -std=c++0x $(DEBUG_FLAGS)
 LDFLAGS = $$LDFLAGS -w -std=c++0x $(DEBUG_FLAGS)
-#LDFLAGS = $$LDFLAGS -Wl,-rpath=/home/shehzad/work/deviceaccess/build/mtca_local_install/lib
 
 include mtca4u_matlab_version
 
@@ -9,15 +8,15 @@ include mtca4u_matlab_version
 #You can change the path by setting the environment variable MTCA4U_DIR or
 # by calling make preceeded by the assignmet.
 # Example
-#MTCA4U_DIR=/home/shehzad/work/deviceaccess
-ifdef MTCA4U_DIR
-  include $(MTCA4U_DIR)/MTCA4U.CONFIG
+# $ MTCA4U_DIR=/home/mheuer/mtca4u_test_installation make
+#ifdef MTCA4U_DIR
+#  include $(MTCA4U_DIR)/MTCA4U.CONFIG
 #else
-#  include /usr/local/
-endif
+#  include /usr/local/bin/mtca4u/MTCA4U.CONFIG
+#endif
 
-MtcaMappedDevice_INCLUDE_FLAGS=$(shell /usr/local/bin/mtca4u-deviceaccess-config --cppflags)
-MtcaMappedDevice_LIB_FLAGS=$(shell /usr/local/bin/mtca4u-deviceaccess-config --ldflags)
+MtcaMappedDevice_INCLUDE_FLAGS=$(shell mtca4u-deviceaccess-config --cppflags)
+MtcaMappedDevice_LIB_FLAGS=$(shell mtca4u-deviceaccess-config --ldflags)
 LDFLAGS = $$LDFLAGS $(MtcaMappedDevice_LIB_FLAGS)
 MtcaMappedDevice_LINK_PATH=$(shell echo $(MtcaMappedDevice_LIB_FLAGS) | cut -d" " -f 1 )
 MtcaMappedDevice_LINK_LIBRARY=$(shell echo $(MtcaMappedDevice_LIB_FLAGS) | cut -d" " -f 2 )
