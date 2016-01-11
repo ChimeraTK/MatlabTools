@@ -1,6 +1,7 @@
 CFLAGS = $$CFLAGS -Wall -Wextra -Wshadow -pedantic -Wuninitialized -std=c++0x $(DEBUG_FLAGS) 
 CXXFLAGS = $$CXXFLAGS -Wall -Wextra -Wshadow -pedantic -Wuninitialized -std=c++0x $(DEBUG_FLAGS)
 LDFLAGS = $$LDFLAGS -w -std=c++0x $(DEBUG_FLAGS)
+#LDFLAGS = $$LDFLAGS -Wl,-rpath=/home/shehzad/work/deviceaccess/build/mtca_local_install/lib
 
 include mtca4u_matlab_version
 
@@ -17,10 +18,13 @@ endif
 
 MtcaMappedDevice_INCLUDE_FLAGS=$(shell /usr/local/bin/mtca4u-deviceaccess-config --cppflags)
 MtcaMappedDevice_LIB_FLAGS=$(shell /usr/local/bin/mtca4u-deviceaccess-config --ldflags)
+LDFLAGS = $$LDFLAGS $(MtcaMappedDevice_LIB_FLAGS)
+MtcaMappedDevice_LINK_PATH=$(shell echo $(MtcaMappedDevice_LIB_FLAGS) | cut -d" " -f 1 )
+MtcaMappedDevice_LINK_LIBRARY=$(shell echo $(MtcaMappedDevice_LIB_FLAGS) | cut -d" " -f 2 )
 
-
-MTCA4U_MEX_FLAGS = $(MtcaMappedDevice_INCLUDE_FLAGS)\
-                   $(MtcaMappedDevice_LIB_FLAGS) $(MtcaMappedDevice_RUNPATH_FLAGS)
+MTCA4U_MEX_FLAGS = $(MtcaMappedDevice_INCLUDE_FLAGS) $(MtcaMappedDevice_LINK_PATH)\
+                   $(MtcaMappedDevice_LINK_LIBRARY) $(MtcaMappedDevice_RUNPATH_FLAGS)
+#MTCA4U_MEX_FLAGS = $(MtcaMappedDevice_INCLUDE_FLAGS) $(MtcaMappedDevice_LIB_FLAGS) $(MtcaMappedDevice_RUNPATH_FLAGS)
 
 #Set up MATLAB Stuff
 MATLAB_ROOT = /usr/local/MATLAB/R2014b

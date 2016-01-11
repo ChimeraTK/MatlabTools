@@ -5,10 +5,12 @@ MEXEXT = $(shell $(MATLAB_ROOT)/bin/mexext)
 
 CFLAGS = $$CFLAGS -Wall -Wextra -Wshadow -pedantic -Wuninitialized -std=c++0x $(DEBUG_FLAGS)
 CXXFLAGS = $$CXXFLAGS -ldl -Wall -Wextra -Wshadow -pedantic -Wuninitialized -std=c++0x $(DEBUG_FLAGS) 
-LDFLAGS = $$LDFLAGS -w -std=c++0x $(DEBUG_FLAGS) -ldl
-#fixme
+LDFLAGS = $$LDFLAGS -w -std=c++0x $(DEBUG_FLAGS)
+LDFLAGS = $$LDFLAGS $$MtcaMappedDevice_LIB_FLAGS -ldl
+#alternatively, remove last ldflags definition, and add them directly in the option file. Also export export LD_LIBRARY_PATH=$(MATLAB_ROOT)/bin/glnxa64/:$LD_LIBRARY_PATH
+#can be replaced with line below.
+#LDFLAGS = $$LDFLAGS -Wl,-rpath-link,$(MATLAB_ROOT)/bin/glnxa64,-rpath=/home/shehzad/work/deviceaccess/build/mtca_local_install/lib:$(MATLAB_ROOT)/bin/glnxa64 -ldl
 export LD_LIBRARY_PATH=$(MATLAB_ROOT)/bin/glnxa64/:$LD_LIBRARY_PATH
-#export LD_LIBRARY_PATH=$(MATLAB_ROOT)/bin/glnxa64/:/home/shehzad/work/deviceaccess/build/mtca_local_install/lib/:$LD_LIBRARY_PATH
 .PHONY : test test_version.m init_remote.m test_remote_init.m
 
 all : mleval mlcallmex
