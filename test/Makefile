@@ -1,12 +1,14 @@
 MATLAB_ROOT = /usr/local/MATLAB/R2014b
+#MATLAB_ROOT = /usr/local/MATLAB/R2014b
+#MATLAB_ROOT = /space/nshehzad/work/Matlab/R2015b
 
 include ../mtca4u_matlab_version
 MEXEXT = $(shell $(MATLAB_ROOT)/bin/mexext)
 
 CFLAGS = $$CFLAGS -Wall -Wextra -Wshadow -pedantic -Wuninitialized -std=c++0x $(DEBUG_FLAGS)
-CXXFLAGS = $$CXXFLAGS -ldl -Wall -Wextra -Wshadow -pedantic -Wuninitialized -std=c++0x $(DEBUG_FLAGS) 
-LDFLAGS = $$LDFLAGS -w -std=c++0x $(DEBUG_FLAGS)
-LDFLAGS = $$LDFLAGS $$MtcaMappedDevice_LIB_FLAGS -ldl
+CXXFLAGS = $$CXXFLAGS -Wall -Wextra -Wshadow -pedantic -Wuninitialized -std=c++0x $(DEBUG_FLAGS) 
+LDFLAGS = $$LDFLAGS -w -std=c++0x $(DEBUG_FLAGS) 
+LDFLAGS = $$LDFLAGS $$MtcaMappedDevice_LIB_FLAGS -ldl 
 #alternatively, remove last ldflags definition, and add them directly in the option file. Also export export LD_LIBRARY_PATH=$(MATLAB_ROOT)/bin/glnxa64/:$LD_LIBRARY_PATH
 #can be replaced with line below.
 #LDFLAGS = $$LDFLAGS -Wl,-rpath-link,$(MATLAB_ROOT)/bin/glnxa64,$$MtcaMappedDevice_LIB_FLAGS:$(MATLAB_ROOT)/bin/glnxa64 -ldl
