@@ -8,7 +8,7 @@ MEXEXT = $(shell $(MATLAB_ROOT)/bin/mexext)
 CFLAGS = $$CFLAGS -Wall -Wextra -Wshadow -pedantic -Wuninitialized -std=c++0x $(DEBUG_FLAGS)
 CXXFLAGS = $$CXXFLAGS -Wall -Wextra -Wshadow -pedantic -Wuninitialized -std=c++0x $(DEBUG_FLAGS) 
 LDFLAGS = $$LDFLAGS -w -std=c++0x $(DEBUG_FLAGS) 
-LDFLAGS = $$LDFLAGS $$MtcaMappedDevice_LIB_FLAGS -ldl 
+LDFLAGS = $$LDFLAGS $$MtcaMappedDevice_LIB_FLAGS 
 #alternatively, remove last ldflags definition, and add them directly in the option file. Also export export LD_LIBRARY_PATH=$(MATLAB_ROOT)/bin/glnxa64/:$LD_LIBRARY_PATH
 #can be replaced with line below.
 #LDFLAGS = $$LDFLAGS -Wl,-rpath-link,$(MATLAB_ROOT)/bin/glnxa64,$$MtcaMappedDevice_LIB_FLAGS:$(MATLAB_ROOT)/bin/glnxa64 -ldl

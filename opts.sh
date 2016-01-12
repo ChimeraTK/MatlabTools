@@ -61,7 +61,7 @@ echo "Error: Did not imbed 'options.sh' code"; exit 1 #imbed options.sh glnx86 1
             CXX='g++-4.6'
             CXXFLAGS='-ansi -D_GNU_SOURCE'
             CXXFLAGS="$CXXFLAGS $MCXXFLAGS -DGLNXA64 -DGCC"
-            CXXLIBS="$RPATH $MCXXLIBS -lm"
+            CXXLIBS="$RPATH $MCXXLIBS -ldl -lm"
             CXXOPTIMFLAGS='-O -DNDEBUG'
             CXXDEBUGFLAGS='-g'
 #
