@@ -15,18 +15,16 @@ include mtca4u_matlab_version
 #  include /usr/local/bin/mtca4u/MTCA4U.CONFIG
 #endif
 
-MtcaMappedDevice_INCLUDE_FLAGS=$(shell mtca4u-deviceaccess-config --cppflags)
-MtcaMappedDevice_LIB_FLAGS=$(shell mtca4u-deviceaccess-config --ldflags)
-LDFLAGS = $$LDFLAGS $(MtcaMappedDevice_LIB_FLAGS)
-MtcaMappedDevice_LINK_PATH=$(shell echo $(MtcaMappedDevice_LIB_FLAGS) | cut -d" " -f 1 )
-MtcaMappedDevice_LINK_LIBRARY=$(shell echo $(MtcaMappedDevice_LIB_FLAGS) | cut -d" " -f 2 )
-
-MTCA4U_MEX_FLAGS = $(MtcaMappedDevice_INCLUDE_FLAGS) $(MtcaMappedDevice_LINK_PATH)\
-                   $(MtcaMappedDevice_LINK_LIBRARY) $(MtcaMappedDevice_RUNPATH_FLAGS)
-#MTCA4U_MEX_FLAGS = $(MtcaMappedDevice_INCLUDE_FLAGS) $(MtcaMappedDevice_LIB_FLAGS) $(MtcaMappedDevice_RUNPATH_FLAGS)
+DeviceAccess_INCLUDE_FLAGS=$(shell mtca4u-deviceaccess-config --cppflags)
+DeviceAccess_LIB_FLAGS=$(shell mtca4u-deviceaccess-config --ldflags)
+LDFLAGS = $$LDFLAGS $(DeviceAccess_LIB_FLAGS)
+DeviceAccess_MEX_FLAGS=$(shell mtca4u-deviceaccess-config --mexflags)
+MTCA4U_MEX_FLAGS = $(DeviceAccess_INCLUDE_FLAGS) $(DeviceAccess_MEX_FLAGS)
+                   
 
 #Set up MATLAB Stuff
 MATLAB_ROOT = /usr/local/MATLAB/R2014b
+#MATLAB_ROOT = /space/nshehzad/work/Matlab/R2013b
 MEXEXT = $(shell $(MATLAB_ROOT)/bin/mexext)
 
 #Setup more stuff
