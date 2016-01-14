@@ -2,37 +2,32 @@ CFLAGS = $$CFLAGS -Wall -Wextra -Wshadow -pedantic -Wuninitialized -std=c++0x $(
 CXXFLAGS = $$CXXFLAGS -Wall -Wextra -Wshadow -pedantic -Wuninitialized -std=c++0x $(DEBUG_FLAGS)
 LDFLAGS = $$LDFLAGS -w -std=c++0x $(DEBUG_FLAGS)
 
+#This will set MTCA4U_MATLAB_VERSION
 include mtca4u_matlab_version
 
-#Set the correct parameters for the MTCA4U include
-#You can change the path by setting the environment variable MTCA4U_DIR or
-# by calling make preceeded by the assignmet.
-# Example
-# $ MTCA4U_DIR=/home/mheuer/mtca4u_test_installation make
-#ifdef MTCA4U_DIR
-#  include $(MTCA4U_DIR)/MTCA4U.CONFIG
-#else
-#  include /usr/local/bin/mtca4u/MTCA4U.CONFIG
-#endif
+#This will set MATLAB_ROOT
+include matlab_root 
 
+#Get the includes
 DeviceAccess_INCLUDE_FLAGS=$(shell mtca4u-deviceaccess-config --cppflags)
+
+#Get the libraries
 DeviceAccess_LIB_FLAGS=$(shell mtca4u-deviceaccess-config --ldflags)
+
 LDFLAGS = $$LDFLAGS $(DeviceAccess_LIB_FLAGS)
+
+#Mex requires to have the library path in special manner so use mexflags commands.
 DeviceAccess_MEX_FLAGS=$(shell mtca4u-deviceaccess-config --mexflags)
+
 MTCA4U_MEX_FLAGS = $(DeviceAccess_INCLUDE_FLAGS) $(DeviceAccess_MEX_FLAGS)
-                   
 
-#Set up MATLAB Stuff
-MATLAB_ROOT = /usr/local/MATLAB/R2014b
-#MATLAB_ROOT = /space/nshehzad/work/Matlab/R2013b
 MEXEXT = $(shell $(MATLAB_ROOT)/bin/mexext)
-
+	
 #Setup more stuff
 PWD = $(shell pwd)
 
 ### Target
 all: bin/mtca4u_mex.$(MTCA4U_MATLAB_VERSION).$(MEXEXT)
-	@echo $(MTCA4U_MATLAB_VERSION)
 	make -C test all
 
 debug:
