@@ -1,0 +1,7 @@
+Please set these varaibles before you run make.
+
+1- MATLAB_ROOT
+Set this variable in the file matlab_root before make. e.g., MATLAB_ROOT=/usr/local/MATLAB/R2014b
+
+2- MTCA4U_MATLAB_VERSION
+Set this variable in the file mtca4u_matlab_version e.g., MTCA4U_MATLAB_VERSION=00.03.00

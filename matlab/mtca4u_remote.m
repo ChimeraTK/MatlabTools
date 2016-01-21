@@ -248,6 +248,7 @@ classdef mtca4u_remote < mtca4u_interface
           channel2 = obj.channel.openSession();
           channel2.execCommand(cmd);
           result = ReadStdout(obj, channel2);
+         
           % Handle an Error
           if(channel2.getExitStatus() ~= 0)
             channel2.close();
@@ -276,6 +277,7 @@ classdef mtca4u_remote < mtca4u_interface
             channel2 = obj.channel.openSession();
             channel2.execCommand(cmd);
             result = ReadStdout(obj, channel2);
+            
             % Handle an Error
             if(channel2.getExitStatus() ~= 0)
                 channel2.close();
@@ -316,6 +318,7 @@ classdef mtca4u_remote < mtca4u_interface
           channel2  =  obj.channel.openSession();
           channel2.execCommand(cmd);
           result  =  ReadStdout(obj, channel2);
+         
           % Handle an Error
           if(channel2.getExitStatus() ~= 0)
             channel2.close();

@@ -1,0 +1,2 @@
+Name: DUMMY1	 Device: sdm://./pci:mtcadummys0	 Map: mtcadummy.mapp
+Name: DUMMY2	 Device: sdm://./pci:mtcadummys1	 Map: sequences.map

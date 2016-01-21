@@ -1,23 +1,22 @@
-MATLAB_ROOT = /opt/matlab_R2013b/
-
 include ../mtca4u_matlab_version
+include ../matlab_root
+
 MEXEXT = $(shell $(MATLAB_ROOT)/bin/mexext)
-
+MCXXFLAGS=-I$(MATLAB_ROOT)/extern/include/cpp $(MFLAGS)
 CFLAGS = $$CFLAGS -Wall -Wextra -Wshadow -pedantic -Wuninitialized -std=c++0x $(DEBUG_FLAGS)
-CXXFLAGS = $$CXXFLAGS -Wall -Wextra -Wshadow -pedantic -Wuninitialized -std=c++0x $(DEBUG_FLAGS)
-LDFLAGS = $$LDFLAGS -w -std=c++0x $(DEBUG_FLAGS)
-
+CXXFLAGS = $$CXXFLAGS -Wall -Wextra -Wshadow -pedantic -Wuninitialized -std=c++0x $(DEBUG_FLAGS) $(MCXXFLAGS)
+LDFLAGS = $$LDFLAGS -w -std=c++0x $(DEBUG_FLAGS) 
+LDFLAGS = $$LDFLAGS $$DeviceAccess_LIB_FLAGS 
 export LD_LIBRARY_PATH=$(MATLAB_ROOT)/bin/glnxa64/:$LD_LIBRARY_PATH
-
 .PHONY : test test_version.m init_remote.m test_remote_init.m
 
 all : mleval mlcallmex
 
 mleval : ./src/mleval.cpp
-	mex -g -f $(MATLAB_ROOT)/bin/engopts.sh CFLAGS='$(CFLAGS)' CXXFLAGS='$(CXXFLAGS)' LDFLAGS='$(LDFLAGS)' $<
+	mex -g -f ../opts.sh  CXXFLAGS='$(CXXFLAGS)' LDFLAGS='$(LDFLAGS)' $<
 
 mlcallmex : ./src/mlcallmex.cpp
-	mex -g -f $(MATLAB_ROOT)/bin/engopts.sh CFLAGS='$(CFLAGS)' CXXFLAGS='$(CXXFLAGS)' LDFLAGS='$(LDFLAGS)' $<
+	mex -g -f ../opts.sh  CXXFLAGS='$(CXXFLAGS)' LDFLAGS='$(LDFLAGS)' $<
 
 profile : mlcallmex
 	valgrind --tool=callgrind --collect-atstart=no --toggle-collect=mexFunction ./bin/mlcallmex ../bin/mtca4u_mex.mexa64 4

@@ -10,18 +10,34 @@
 %
 %   Author: Martin Hierholzer <martin.hierholzer@desy.de>
 %
-
 %
 %   Open dummy device
 %   Use DUMMY2 to have the modern interface with modules
 %
-m = mtca4u('DUMMY2');
+m = mtca4u('DUMMY1');
+
+
+m.help();
+
+%
+%   Print all devices in map file 
+delete('print_all_devices.txt'); 
+diary('print_all_devices.txt');
+m.print_info();
+diary off;
+
+[status,cmdout] = system('diff print_all_devices.txt print_all_devices_reference');
+assert(status == 0)
 
 %
 %   Print some device info
 %
+delete('print_device_info.txt'); 
+diary('print_device_info.txt');
 m.print_device_info();
-
+diary off;
+[status,cmdout] = system('diff print_device_info.txt print_device_info_reference');
+assert(status == 0)
 %
 %   Read FIRMWARE and COMPILATION values and print them
 %
@@ -66,3 +82,13 @@ dmadata = m.read_dma_raw('ADC', 'AREA_DMA_VIA_DMA', 0, nelements);
 subplot(2,1,2);
 plot(dmadata);
 title('DMA read with integer data');
+
+fig2 = figure('Name','Sequence data', 'NumberTitle','off', 'Position',[360,500,900,900]);
+m2 = mtca4u('DUMMY2');
+seqdata = m2.read_seq('TEST', 'INT');
+subplot(2,2,1);
+plot(seqdata);
+title('DMA read with seq data');
+
+
+

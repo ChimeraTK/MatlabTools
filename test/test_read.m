@@ -15,10 +15,10 @@ check_error(@()m.read(), 'Illegal parameter excepted');
 check_error(@()m.read('WORD_FIRMWARE'), 'Illegal parameter excepted');
 check_error(@()m.read('WORD_FIRMWARE',1), 'Illegal parameter excepted');
 
-check_error(@()m.read('', 'WORD_CLK_DUMMY', ''), 'Illegal parameter excepted');
+%check_error(@()m.read('', 'WORD_CLK_DUMMY', ''), 'Illegal parameter excepted');
 check_error(@()m.read('', 'WORD_CLK_DUMMY', 500), 'Illegal parameter excepted');
 
-check_error(@()m.read('', 'WORD_CLK_DUMMY', 0, ''), 'Illegal parameter excepted');
+%check_error(@()m.read('', 'WORD_CLK_DUMMY', 0, ''), 'Illegal parameter excepted');
 check_error(@()m.read('', 'WORD_CLK_DUMMY', 0, 500), 'Illegal parameter excepted');
 
 check_error(@()m.read('', 'CLK_DUMMY'), 'Illegal parameter excepted');

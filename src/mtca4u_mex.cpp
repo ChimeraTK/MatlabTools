@@ -10,7 +10,7 @@
  * Copyright (c) 2014 michael.heuer@desy.de
  *
  */
-
+#define __MEX_DEBUG_MODE
 #include <vector>
 #include <map>
 #include <string>
@@ -19,9 +19,9 @@
 
 #include <mex.h>
 
-#include <MtcaMappedDevice/dmapFilesParser.h>
-#include <MtcaMappedDevice/devMap.h>
-#include <MtcaMappedDevice/MultiplexedDataAccessor.h>
+#include <mtca4u/DMapFilesParser.h>
+#include <mtca4u/Device.h>
+#include <mtca4u/MultiplexedDataAccessor.h>
 
 #include "../include/version.h"
 
@@ -62,12 +62,13 @@ string mxArrayToStdString(const mxArray *pa)  { char *ps = mxArrayToString(pa); 
 // Function declaration
 
 //static void CleanUp(void); // Should me declared static (See Matlab MEX Manual)
-
-boost::shared_ptr< devMap<devPCIE> > getDevice(const mxArray *plhsDevice);
+boost::shared_ptr<mtca4u::Device> getDevice(const mxArray *plhsDevice);
+//boost::shared_ptr< devMap<devPCIE> > getDevice(const mxArray *plhsDevice);
 
 // Global Parameter
 
-std::vector<boost::shared_ptr< devMap<devPCIE> > > openDevicesVector;
+//std::vector<boost::shared_ptr< devMap<devPCIE> > > openDevicesVector;
+std::vector<boost::shared_ptr<mtca4u::Device> > openDevicesVector;
 
 // Command Function declarations and stuff
 
@@ -90,7 +91,7 @@ void getRegisterSize(unsigned int, mxArray**, unsigned int, const mxArray **);
 void readRegister(unsigned int, mxArray**, unsigned int, const mxArray **);
 void writeRegister(unsigned int, mxArray**, unsigned int, const mxArray **);
 void readDmaRaw(unsigned int, mxArray**, unsigned int, const mxArray **);
-void readDmaChannel(unsigned int, mxArray**, unsigned int, const mxArray **);
+//void readDmaChannel(unsigned int, mxArray**, unsigned int, const mxArray **);
 void readSequence(unsigned int, mxArray**, unsigned int, const mxArray **);
 
 vector<Command> vectorOfCommands = {
@@ -107,7 +108,7 @@ vector<Command> vectorOfCommands = {
   Command("read", &readRegister, "", ""),
   Command("write", &writeRegister, "", ""),
   Command("read_dma_raw", &readDmaRaw, "", ""),
-  Command("read_dma", &readDmaChannel, "", ""),
+  //Command("read_dma", &readDmaChannel, "", ""),
   Command("read_seq", &readSequence, "", ""),
 };
 
@@ -156,7 +157,7 @@ void mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
     else it->pCallback(nlhs, plhs, nrhs - 1, &prhs[1]);
   }
 
-  catch ( exBase &e )
+  catch ( Exception &e )
   {
     mexErrMsgTxt(e.what());
   }
@@ -220,8 +221,10 @@ void mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
  * @param[in] dmapFileName File to be loaded or all in the current directory if empty
  *
  */
-boost::shared_ptr< devMap<devPCIE> > getDevice(const mxArray *prhsDevice) //, const string &dmapFileName = "")
+//boost::shared_ptr< devMap<devPCIE> > getDevice(const mxArray *prhsDevice) //, const string &dmapFileName = "")
+boost::shared_ptr<mtca4u::Device> getDevice(const mxArray *prhsDevice)
 {
+  	 
   if (!mxIsRealScalar(prhsDevice))
     mexErrMsgTxt("Invalid device handle.");
 
@@ -270,34 +273,40 @@ void openDevice(unsigned int, mxArray *plhs[], unsigned int nrhs, const mxArray 
   if(nrhs < 1) mexErrMsgTxt("Not enough input arguments.");
   if(nrhs > 1) mexWarnMsgTxt("Too many input arguments.");
   
-  dmapFilesParser parser(".");
+  //dmapFilesParser parser(".");
+  DMapFilesParser parser(".");
   
   std::string deviceName = mxArrayToStdString(prhs[0]);
   
   // Look for device
-  dmapFilesParser::iterator it = parser.begin();
+  //dmapFilesParser::iterator it = parser.begin();
+  DMapFilesParser::iterator it = parser.begin();
   for (; it != parser.end(); ++it)
   {
-    if (deviceName == it->first.dev_name)
+    if (deviceName == it->first.deviceName)
       break;
   }
 
   if(it == parser.end())
     mexErrMsgTxt("Unknown device '" + deviceName + "'.");
+    
 
   //open the devPCIE
-  boost::shared_ptr<devPCIE> pdev( new devPCIE );
-  pdev->openDev(it->first.dev_file, O_RDWR, NULL);
-
+  //boost::shared_ptr<devPCIE> pdev( new devPCIE );
+  //pdev->openDev(it->first.dev_file, O_RDWR, NULL);
+  
   //open the mapFile  
-  openDevicesVector.push_back( boost::shared_ptr< devMap<devPCIE> > (new devMap< devPCIE >) );
-  openDevicesVector.back()->openDev( pdev, it->second ); //never thows
+  //openDevicesVector.push_back( boost::shared_ptr< devMap<devPCIE> > (new devMap< devPCIE >) );
+  openDevicesVector.push_back( boost::shared_ptr<Device> ( new mtca4u::Device()) );
+  //openDevicesVector.back()->openDev( pdev, it->second ); //never thows
+  //openDevicesVector.back()->open( pdev, it->second ); //never thows
+  openDevicesVector.back()->open(it->first.deviceName);
   
   plhs[0] = mxCreateDoubleMatrix(1, 1, mxREAL);
   (*mxGetPr(plhs[0])) = openDevicesVector.size()-1;
   
   #ifdef __MEX_DEBUG_MODE
-  mexPrintf("Successfully opened "+ deviceName + " at " + it->first.dev_file + "\n");
+  mexPrintf("Successfully opened "+ deviceName + " at " + it->first.uri + "\n");
   #endif
 }
 
@@ -307,6 +316,7 @@ void openDevice(unsigned int, mxArray *plhs[], unsigned int nrhs, const mxArray 
  */
 void closeDevice(unsigned int, mxArray **, unsigned int nrhs, const mxArray *prhs[])
 {
+	mexPrintf("closeDevice");
   if (nrhs < 1) mexErrMsgTxt("Not enough input arguments.");
   if (nrhs > 1) mexWarnMsgTxt("Too many input arguments.");
 
@@ -346,7 +356,8 @@ void getInfo(unsigned int nlhs, mxArray *plhs[], unsigned int nrhs, const mxArra
   if(nrhs > 0) mexWarnMsgTxt("Too many input arguments.");
   if(nlhs > 1) mexErrMsgTxt("Too many output arguments.");
 
-  dmapFilesParser parser(".");
+  //dmapFilesParser parser(".");
+  DMapFilesParser parser(".");
 
   mwSize dims[2] = {1, (int)parser.getdMapFileSize()};
   const char *field_names[] = {"name", "device", "firmware", "date", "map"};
@@ -354,7 +365,8 @@ void getInfo(unsigned int nlhs, mxArray *plhs[], unsigned int nrhs, const mxArra
 
   unsigned int i = 0;
 
-  for (dmapFilesParser::iterator it = parser.begin(); it != parser.end(); ++it, ++i)
+  //for (dmapFilesParser::iterator it = parser.begin(); it != parser.end(); ++it, ++i)
+  for (DMapFilesParser::iterator it = parser.begin(); it != parser.end(); ++it, ++i)
   {
     mxArray *firmware_value = mxCreateDoubleMatrix(1,1,mxREAL);
     *mxGetPr(firmware_value) = 0;
@@ -362,24 +374,27 @@ void getInfo(unsigned int nlhs, mxArray *plhs[], unsigned int nrhs, const mxArra
     std::string date;
 
     try {
-      devMap<devPCIE> tempDevice;
-      tempDevice.openDev(it->first.dev_file, it->first.map_file_name);
+      //devMap<devPCIE> tempDevice;
+      
+      std::shared_ptr<Device> tempDevice( new Device());
+      //tempDevice.openDev(it->first.dev_file, it->first.map_file_name);
+      tempDevice->open(it->first.deviceName);
 
       int firmware = 0;
-      tempDevice.readReg("BOARD0", "WORD_FIRMWARE", &firmware);
+      tempDevice->readReg("BOARD0", "WORD_FIRMWARE", &firmware);
       *mxGetPr(firmware_value) = firmware;
 
       int timestamp = 0;
-      tempDevice.readReg("BOARD0", "WORD_TIMESTAMP", &timestamp);
+      tempDevice->readReg("BOARD0", "WORD_TIMESTAMP", &timestamp);
       date = timestamp;
     }
     catch(...) { }
 
-    mxSetFieldByNumber(plhs[0], i, 0, mxCreateString(it->first.dev_name.c_str()));
-    mxSetFieldByNumber(plhs[0], i, 1, mxCreateString(it->first.dev_file.c_str()));
+    mxSetFieldByNumber(plhs[0], i, 0, mxCreateString(it->first.deviceName.c_str()));
+    mxSetFieldByNumber(plhs[0], i, 1, mxCreateString(it->first.uri.c_str()));
     mxSetFieldByNumber(plhs[0], i, 2, firmware_value);
     mxSetFieldByNumber(plhs[0], i, 3, mxCreateString(date.c_str()));
-    mxSetFieldByNumber(plhs[0], i, 4, mxCreateString(it->first.map_file_name.c_str()));
+    mxSetFieldByNumber(plhs[0], i, 4, mxCreateString(it->first.mapFileName.c_str()));
   }
 }
 
@@ -389,39 +404,45 @@ void getInfo(unsigned int nlhs, mxArray *plhs[], unsigned int nrhs, const mxArra
  */
 void getDeviceInfo(unsigned int nlhs, mxArray ** plhs, unsigned int nrhs, const mxArray *prhs[])
 {
+std::cout<<"getDeviceInfo"<<std::endl;
   if(nrhs < 1) mexErrMsgTxt("Not enough input arguments.");
   if(nrhs > 1) mexWarnMsgTxt("Too many input arguments.");
   if(nlhs > 1) mexErrMsgTxt("Too many output arguments.");
+std::cout<<"no error"<<std::endl;
+  //boost::shared_ptr< devMap<devPCIE> > device = getDevice(prhs[0]);
+  boost::shared_ptr<mtca4u::Device> device = getDevice(prhs[0]);
 
-  boost::shared_ptr< devMap<devPCIE> > device = getDevice(prhs[0]);
+  
 
-  const boost::shared_ptr<const mtca4u::mapFile> map = device->getRegisterMap();
+  const boost::shared_ptr<const mtca4u::RegisterInfoMap> map = device->getRegisterMap();
 
   const char *field_names[] = {"name", "elements", "signed", "bits", "fractional_bits", "description"};
+  
   plhs[0] = mxCreateStructMatrix(map->getMapFileSize(), 1, (sizeof(field_names)/sizeof(*field_names)), field_names);
 
   unsigned int index = 0;
-  for (std::vector<mapFile::mapElem>::const_iterator cit = map->begin(); cit != map->end(); ++cit, ++index) {
-	  mxSetFieldByNumber(plhs[0], index, 0, mxCreateString(cit->reg_name.c_str()));
+  for (std::vector<RegisterInfoMap::RegisterInfo>::const_iterator cit = map->begin(); cit != map->end(); ++cit, ++index) {
+	  mxSetFieldByNumber(plhs[0], index, 0, mxCreateString(cit->name.c_str()));
 
     mxArray *numElements = mxCreateDoubleMatrix(1,1,mxREAL);
-    *mxGetPr(numElements) = cit->reg_elem_nr;
+    *mxGetPr(numElements) = cit->nElements;
     mxSetFieldByNumber(plhs[0], index, 1, numElements);
 
     mxArray *signedFlag = mxCreateLogicalMatrix(1,1);
-    *mxGetPr(signedFlag) = cit->reg_signed;
+    *mxGetPr(signedFlag) = cit->signedFlag;
     mxSetFieldByNumber(plhs[0], index, 2, signedFlag);
 
     mxArray *numBits = mxCreateDoubleMatrix(1,1,mxREAL);
-    *mxGetPr(numBits) = cit->reg_width;
+    *mxGetPr(numBits) = cit->width;
     mxSetFieldByNumber(plhs[0], index, 3, numBits);
 
     mxArray *numFractionalBits = mxCreateDoubleMatrix(1,1,mxREAL);
-    *mxGetPr(numFractionalBits) = cit->reg_frac_bits;
+    *mxGetPr(numFractionalBits) = cit->nFractionalBits;
     mxSetFieldByNumber(plhs[0], index, 4, numFractionalBits);
 
     mxSetFieldByNumber(plhs[0], index, 5, mxCreateString(""));
   }
+  std::cout<<"index:"<<index<<std::endl;
 }
 
 /**
@@ -434,34 +455,36 @@ void getRegisterInfo(unsigned int nlhs, mxArray *plhs[], unsigned int nrhs, cons
   if(nrhs > 3) mexWarnMsgTxt("Too many input arguments.");
   if(nlhs > 1) mexErrMsgTxt("Too many output arguments.");
   
-  boost::shared_ptr< devMap<devPCIE> > device = getDevice(prhs[0]);
+  //boost::shared_ptr< devMap<devPCIE> > device = getDevice(prhs[0]);
+  boost::shared_ptr<Device> device = getDevice(prhs[0]);
 
   if (!mxIsChar(prhs[1])) mexErrMsgTxt("Invalid " +  getOrdinalNumerString(2) + " input argument.");
   if (!mxIsChar(prhs[2])) mexErrMsgTxt("Invalid " +  getOrdinalNumerString(2) + " input argument.");
 
-  boost::shared_ptr<devMap<devPCIE>::RegisterAccessor> reg = device->getRegisterAccessor(mxArrayToStdString(prhs[2]), mxArrayToStdString(prhs[1]));
-  mapFile::mapElem regInfo = reg->getRegisterInfo();
+  //boost::shared_ptr<devMap<devPCIE>::RegisterAccessor> reg = device->getRegisterAccessor(mxArrayToStdString(prhs[2]), mxArrayToStdString(prhs[1]));
+  boost::shared_ptr<Device::RegisterAccessor> reg = device->getRegisterAccessor(mxArrayToStdString(prhs[2]), mxArrayToStdString(prhs[1]));
+  RegisterInfoMap::RegisterInfo regInfo = reg->getRegisterInfo();
 
   //mwSize dims[2] = {1, 1};
   const char *field_names[] = {"name", "elements", "signed", "bits", "fractional_bits", "description"};
   plhs[0] = mxCreateStructMatrix(1, 1, (sizeof(field_names)/sizeof(*field_names)), field_names);
 
-  mxSetFieldByNumber(plhs[0], 0, 0, mxCreateString(regInfo.reg_name.c_str()));
+  mxSetFieldByNumber(plhs[0], 0, 0, mxCreateString(regInfo.name.c_str()));
 
   mxArray *numElements = mxCreateDoubleMatrix(1,1,mxREAL);
-  *mxGetPr(numElements) = regInfo.reg_elem_nr;
+  *mxGetPr(numElements) = regInfo.nElements;
   mxSetFieldByNumber(plhs[0], 0, 1, numElements);
 
   mxArray *signedFlag = mxCreateLogicalMatrix(1,1);
-  *mxGetPr(signedFlag) = regInfo.reg_signed;
+  *mxGetPr(signedFlag) = regInfo.signedFlag;
   mxSetFieldByNumber(plhs[0], 0, 2, signedFlag);
 
   mxArray *numBits = mxCreateDoubleMatrix(1,1,mxREAL);
-  *mxGetPr(numBits) = regInfo.reg_width;
+  *mxGetPr(numBits) = regInfo.width;
   mxSetFieldByNumber(plhs[0], 0, 3, numBits);
 
   mxArray *numFractionalBits = mxCreateDoubleMatrix(1,1,mxREAL);
-  *mxGetPr(numFractionalBits) = regInfo.reg_frac_bits;
+  *mxGetPr(numFractionalBits) = regInfo.nFractionalBits;
   mxSetFieldByNumber(plhs[0], 0, 4, numFractionalBits);
 
   mxSetFieldByNumber(plhs[0], 0, 5, mxCreateString(""));
@@ -477,15 +500,17 @@ void getRegisterSize(unsigned int nlhs, mxArray *plhs[], unsigned int nrhs, cons
   if(nrhs > 3) mexWarnMsgTxt("Too many input arguments.");
   if(nlhs > 1) mexErrMsgTxt("Too many output arguments.");
   
-  boost::shared_ptr< devMap<devPCIE> > device = getDevice(prhs[0]);
+  //boost::shared_ptr< devMap<devPCIE> > device = getDevice(prhs[0]);
+  boost::shared_ptr<Device> device = getDevice(prhs[0]);
   
   if (!mxIsChar(prhs[1])) mexErrMsgTxt("Invalid " +  getOrdinalNumerString(1) + " input argument.");
   if (!mxIsChar(prhs[2])) mexErrMsgTxt("Invalid " +  getOrdinalNumerString(2) + " input argument.");
 
-  boost::shared_ptr<devMap<devPCIE>::RegisterAccessor> reg = device->getRegisterAccessor(mxArrayToStdString(prhs[2]), mxArrayToStdString(prhs[1]));
+  //boost::shared_ptr<devMap<devPCIE>::RegisterAccessor> reg = device->getRegisterAccessor(mxArrayToStdString(prhs[2]), mxArrayToStdString(prhs[1]));
+  boost::shared_ptr<Device::RegisterAccessor> reg = device->getRegisterAccessor(mxArrayToStdString(prhs[2]), mxArrayToStdString(prhs[1]));
 
   plhs[0] = mxCreateDoubleMatrix(1, 1, mxREAL);
-  (*mxGetPr(plhs[0])) = reg->getRegisterInfo().reg_elem_nr;
+  (*mxGetPr(plhs[0])) = reg->getRegisterInfo().nElements;
 }
 
 /**
@@ -496,12 +521,13 @@ void getRegisterSize(unsigned int nlhs, mxArray *plhs[], unsigned int nrhs, cons
 void readRegister(unsigned int nlhs, mxArray *plhs[], unsigned int nrhs, const mxArray *prhs[])
 {
   static const unsigned int pp_device = 0, pp_module = 1, pp_register = 2, pp_offset = 3, pp_elements = 4;
-  
+  std::cout<<"readRegister"<<std::endl;
   if (nrhs < 3) mexErrMsgTxt("Not enough input arguments.");
   if (nrhs > 5) mexWarnMsgTxt("To many input arguments.");
   if (nlhs > 1) mexErrMsgTxt("To many output arguments.");
   
-  boost::shared_ptr< devMap<devPCIE> > device = getDevice(prhs[pp_device]);
+  //boost::shared_ptr< devMap<devPCIE> > device = getDevice(prhs[pp_device]);
+  boost::shared_ptr<Device> device = getDevice(prhs[pp_device]);
   
   if (!mxIsChar(prhs[pp_module])) mexErrMsgTxt("Invalid " + getOrdinalNumerString(pp_module) + " input argument.");
   if (!mxIsChar(prhs[pp_register])) mexErrMsgTxt("Invalid " + getOrdinalNumerString(pp_register) + " input argument.");
@@ -512,12 +538,12 @@ void readRegister(unsigned int nlhs, mxArray *plhs[], unsigned int nrhs, const m
   if ((nrhs > pp_elements) && !mxIsPositiveRealScalar(prhs[pp_elements]))
     mexErrMsgTxt("Invalid " + getOrdinalNumerString(pp_elements) + " input argument.");
 	
-  boost::shared_ptr<devMap<devPCIE>::RegisterAccessor> reg = device->getRegisterAccessor(mxArrayToStdString(prhs[pp_register]),mxArrayToStdString(prhs[pp_module]));
+  boost::shared_ptr<Device::RegisterAccessor> reg = device->getRegisterAccessor(mxArrayToStdString(prhs[pp_register]),mxArrayToStdString(prhs[pp_module]));
 
   const uint32_t offset = (nrhs > pp_offset) ? mxGetScalar(prhs[pp_offset]) : 0;
   //if(offset == 0) mexErrMsgTxt("Subscript indices must be real positive integers. Instead of C/C++ the first element in MATLAB is 1.");
   
-  const uint32_t elements = (nrhs > pp_elements) ? mxGetScalar(prhs[pp_elements]) : (reg->getRegisterInfo().reg_elem_nr - offset);
+  const uint32_t elements = (nrhs > pp_elements) ? mxGetScalar(prhs[pp_elements]) : (reg->getRegisterInfo().nElements - offset);
 
   plhs[0] = mxCreateDoubleMatrix(1, elements, mxREAL);
   double *plhsValue = mxGetPr(plhs[0]);
@@ -536,7 +562,8 @@ void writeRegister(unsigned int, mxArray **, unsigned int nrhs, const mxArray *p
   if (nrhs < 4) mexErrMsgTxt("Not enough input arguments.");
   if (nrhs > 5) mexWarnMsgTxt("To many input arguments.");
   
-  boost::shared_ptr< devMap<devPCIE> > device = getDevice(prhs[pp_device]);
+  //boost::shared_ptr< devMap<devPCIE> > device = getDevice(prhs[pp_device]);
+  boost::shared_ptr<Device> device = getDevice(prhs[pp_device]);
 	
   if (!mxIsChar(prhs[pp_module]))  mexErrMsgTxt("Invalid " + getOrdinalNumerString(pp_module) + " input argument.");
   if (!mxIsChar(prhs[pp_register]))  mexErrMsgTxt("Invalid " + getOrdinalNumerString(pp_register) + " input argument.");
@@ -547,7 +574,8 @@ void writeRegister(unsigned int, mxArray **, unsigned int nrhs, const mxArray *p
   if ((nrhs > pp_offset) && (!mxIsRealScalar(prhs[pp_offset]) ||(mxGetScalar(prhs[pp_offset]) < 0)))
     mexErrMsgTxt("Invalid " + getOrdinalNumerString(pp_offset) + " input argument.");
 
-  boost::shared_ptr<devMap<devPCIE>::RegisterAccessor> reg = device->getRegisterAccessor(mxArrayToStdString(prhs[pp_register]), mxArrayToStdString(prhs[pp_module]));
+  //boost::shared_ptr<devMap<devPCIE>::RegisterAccessor> reg = device->getRegisterAccessor(mxArrayToStdString(prhs[pp_register]), mxArrayToStdString(prhs[pp_module]));
+  boost::shared_ptr<Device::RegisterAccessor> reg = device->getRegisterAccessor(mxArrayToStdString(prhs[pp_register]), mxArrayToStdString(prhs[pp_module]));
 
   const uint32_t offset = (nrhs > pp_offset) ? mxGetScalar(prhs[pp_offset]) : 0;
 
@@ -583,7 +611,8 @@ void writeRegister(unsigned int, mxArray **, unsigned int nrhs, const mxArray *p
  * @brief readRawDmaData
  *
  */
-template<class T> void innerRawDMARead(const boost::shared_ptr<devMap<devPCIE>::RegisterAccessor> &reg, double* dest, const size_t nElements, const size_t nOffset, const FixedPointConverter &conv)
+//template<class T> void innerRawDMARead(const boost::shared_ptr<devMap<devPCIE>::RegisterAccessor> &reg, double* dest, const size_t nElements, const size_t nOffset, const FixedPointConverter &conv)
+template<class T> void innerRawDMARead(const boost::shared_ptr<Device::RegisterAccessor> &reg, double* dest, const size_t nElements, const size_t nOffset, const FixedPointConverter &conv)
 {
   std::vector<T> dmaValue(nElements);
   reg->readDMA(reinterpret_cast<int32_t*>(&dmaValue[0]), nElements*sizeof(T), nOffset);
@@ -607,7 +636,8 @@ void readDmaRaw(unsigned int nlhs, mxArray *plhs[], unsigned int nrhs, const mxA
   if (nrhs > 9) mexWarnMsgTxt("Too many input arguments.");
   if (nlhs > 1) mexErrMsgTxt("Too many output arguments.");
 
-  boost::shared_ptr< devMap<devPCIE> > device = getDevice(prhs[pp_device]);
+  //boost::shared_ptr< devMap<devPCIE> > device = getDevice(prhs[pp_device]);
+  boost::shared_ptr<Device> device = getDevice(prhs[pp_device]);
 	
   if (!mxIsChar(prhs[pp_module])) mexErrMsgTxt("Invalid " + getOrdinalNumerString(pp_module) + " input argument."); 
   if (!mxIsChar(prhs[pp_register])) mexErrMsgTxt("Invalid " + getOrdinalNumerString(pp_register) + " input argument."); 
@@ -620,10 +650,11 @@ void readDmaRaw(unsigned int nlhs, mxArray *plhs[], unsigned int nrhs, const mxA
   if ((nrhs > pp_bit) && !mxIsPositiveRealScalar(prhs[pp_bit])) mexErrMsgTxt("Invalid " + getOrdinalNumerString(pp_bit) + " input argument.");
   if ((nrhs > pp_fracbit) && !mxIsRealScalar(prhs[pp_fracbit])) mexErrMsgTxt("Invalid " + getOrdinalNumerString(pp_fracbit) + " input argument.");
   
-  boost::shared_ptr<devMap<devPCIE>::RegisterAccessor> reg = device->getRegisterAccessor(mxArrayToStdString(prhs[pp_register]), mxArrayToStdString(prhs[pp_module]));
+  //boost::shared_ptr<devMap<devPCIE>::RegisterAccessor> reg = device->getRegisterAccessor(mxArrayToStdString(prhs[pp_register]), mxArrayToStdString(prhs[pp_module]));
+  boost::shared_ptr<Device::RegisterAccessor> reg = device->getRegisterAccessor(mxArrayToStdString(prhs[pp_register]), mxArrayToStdString(prhs[pp_module]));
   
   const uint32_t offset = (nrhs > pp_offset) ? mxGetScalar(prhs[pp_offset]) : 0;
-  const uint32_t elements = (nrhs > pp_elements) ? mxGetScalar(prhs[pp_elements]) : (reg->getRegisterInfo().reg_elem_nr - offset);
+  const uint32_t elements = (nrhs > pp_elements) ? mxGetScalar(prhs[pp_elements]) : (reg->getRegisterInfo().nElements - offset);
     
   const uint32_t mode = (nrhs > pp_mode) ? mxGetScalar(prhs[pp_mode]): 32;
   if ((mode != 32) && (mode != 16)) mexErrMsgTxt("Invalid data mode.");
@@ -641,8 +672,8 @@ void readDmaRaw(unsigned int nlhs, mxArray *plhs[], unsigned int nrhs, const mxA
   else
     innerRawDMARead<int16_t>(reg, plhsValue, elements, offset, conv);
 }
-
-
+//Not supported any more. 
+#ifdef _OLD
 /**
  * @brief readDmaChannel
  *
@@ -656,7 +687,8 @@ void readDmaChannel(unsigned int nlhs, mxArray *plhs[], unsigned int nrhs, const
   if (nrhs < 3) mexErrMsgTxt("Not enough input arguments.");
   if (nrhs > 11) mexWarnMsgTxt("Too many input arguments.");
   
-  boost::shared_ptr< devMap<devPCIE> > device = getDevice(prhs[pp_device]);
+  //boost::shared_ptr< devMap<devPCIE> > device = getDevice(prhs[pp_device]);
+  boost::shared_ptr<Device> device = getDevice(prhs[pp_device]);
    
   if (!mxIsChar(prhs[pp_module])) mexErrMsgTxt("Invalid " + getOrdinalNumerString(pp_module) + " input argument.");
   if (!mxIsChar(prhs[pp_register])) mexErrMsgTxt("Invalid " + getOrdinalNumerString(pp_register) + " input argument.");
@@ -675,10 +707,11 @@ void readDmaChannel(unsigned int nlhs, mxArray *plhs[], unsigned int nrhs, const
   if ((nrhs > pp_bit) && !mxIsPositiveRealScalar(prhs[pp_bit])) mexErrMsgTxt("Invalid " + getOrdinalNumerString(pp_bit) + " input argument.");
   if ((nrhs > pp_fracbit) && !mxIsRealScalar(prhs[pp_fracbit])) mexErrMsgTxt("Invalid " + getOrdinalNumerString(pp_fracbit) + " input argument.");
   
-  boost::shared_ptr<devMap<devPCIE>::RegisterAccessor> reg = device->getRegisterAccessor(mxArrayToStdString(prhs[pp_register]),mxArrayToStdString(prhs[pp_module]));
+  //boost::shared_ptr<devMap<devPCIE>::RegisterAccessor> reg = device->getRegisterAccessor(mxArrayToStdString(prhs[pp_register]),mxArrayToStdString(prhs[pp_module]));
+  boost::shared_ptr<Device::RegisterAccessor> reg = device->getRegisterAccessor(mxArrayToStdString(prhs[pp_register]),mxArrayToStdString(prhs[pp_module]));
   
   const uint32_t offset = (nrhs > pp_offset) ? mxGetScalar(prhs[pp_offset]): 0;
-  const uint32_t elements = (nrhs > pp_elements) ? mxGetScalar(prhs[pp_elements]) : (reg->getRegisterInfo().reg_elem_nr - offset);
+  const uint32_t elements = (nrhs > pp_elements) ? mxGetScalar(prhs[pp_elements]) : (reg->getRegisterInfo().nElements - offset);
   
   const uint32_t totalChannels = (nrhs > pp_channel_cnt) ? mxGetScalar(prhs[pp_channel_cnt]) : 8;
   //if ((totalChannels != 8) && (totalChannels != 16)) mexErrMsgTxt("Invalid number of channels.");
@@ -740,7 +773,7 @@ void readDmaChannel(unsigned int nlhs, mxArray *plhs[], unsigned int nrhs, const
     }
   }
 }
-
+#endif
 /**
  * @brief readSequence
  *
@@ -753,7 +786,8 @@ void readSequence(unsigned int nlhs, mxArray *plhs[], unsigned int nrhs, const m
   if (nrhs < 3) mexErrMsgTxt("Not enough input arguments.");
   if (nrhs > 6) mexWarnMsgTxt("Too many input arguments.");
     
-  boost::shared_ptr< devMap<devPCIE> > device = getDevice(prhs[pp_device]);
+  //boost::shared_ptr< devMap<devPCIE> > device = getDevice(prhs[pp_device]);
+  boost::shared_ptr<Device> device = getDevice(prhs[pp_device]);
    
   if (!mxIsChar(prhs[pp_module])) mexErrMsgTxt("Invalid " + getOrdinalNumerString(pp_module) + " input argument.");
   if (!mxIsChar(prhs[pp_register])) mexErrMsgTxt("Invalid " + getOrdinalNumerString(pp_register) + " input argument.");
