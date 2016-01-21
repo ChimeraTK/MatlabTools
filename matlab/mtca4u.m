@@ -61,8 +61,7 @@ classdef mtca4u < mtca4u_interface
                 error(ex.message)
             end
             for i = info
-                %fprintf(['Name: ', i.name, '\t Device: ', i.device, '\t Firmware: ', num2str(i.firmware), '\t Date: ', i.date, '\t Map: ', i.map, '\n']);
-                fprintf(['Name: ', i.name, '\t Device: ', i.device, '\t Map: ', i.map, '\n']);
+                fprintf(['Name: ', i.name, '\t Device: ', i.device, '\t Firmware: ', num2str(i.firmware), '\t Date: ', i.date, '\t Map: ', i.map, '\n']);
             end
         end
    end
