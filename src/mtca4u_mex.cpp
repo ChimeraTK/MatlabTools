@@ -10,7 +10,7 @@
  * Copyright (c) 2014 michael.heuer@desy.de
  *
  */
-#define __MEX_DEBUG_MODE
+
 #include <vector>
 #include <map>
 #include <string>
