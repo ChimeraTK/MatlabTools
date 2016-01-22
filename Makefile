@@ -1,6 +1,6 @@
 CFLAGS = $$CFLAGS -Wall -Wextra -Wshadow -pedantic -Wuninitialized -std=c++0x $(DEBUG_FLAGS) 
 CXXFLAGS = $$CXXFLAGS -Wall -Wextra -Wshadow -pedantic -Wuninitialized -std=c++0x $(DEBUG_FLAGS)
-LDFLAGS = $$LDFLAGS -w -std=c++0x $(DEBUG_FLAGS)
+#LDFLAGS = $$LDFLAGS -w -std=c++0x $(DEBUG_FLAGS)
 
 #This will set MTCA4U_MATLAB_VERSION
 include mtca4u_matlab_version
@@ -8,16 +8,17 @@ include mtca4u_matlab_version
 #This will set MATLAB_ROOT
 include matlab_root 
 
-#Get the includes
-DeviceAccess_INCLUDE_FLAGS=$(shell mtca4u-deviceaccess-config --cppflags)
 
 #Get the libraries
 DeviceAccess_LIB_FLAGS=$(shell mtca4u-deviceaccess-config --ldflags)
 
-LDFLAGS = $$LDFLAGS $(DeviceAccess_LIB_FLAGS)
+LDFLAGS= $$LDFLAGS -w -std=c++0x $(DEBUG_FLAGS) $(DeviceAccess_LIB_FLAGS)
 
 #Mex requires to have the library path in special manner so use mexflags commands.
 DeviceAccess_MEX_FLAGS=$(shell mtca4u-deviceaccess-config --mexflags)
+
+#Get the includes
+DeviceAccess_INCLUDE_FLAGS=$(shell mtca4u-deviceaccess-config --cppflags)
 
 MTCA4U_MEX_FLAGS = $(DeviceAccess_INCLUDE_FLAGS) $(DeviceAccess_MEX_FLAGS)
 
