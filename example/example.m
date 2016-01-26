@@ -14,6 +14,11 @@
 %   Open dummy device
 %   Use DUMMY2 to have the modern interface with modules
 %
+dmapToSet = 'dummies.dmap'
+mtca4u_mex('set_dmap', dmapToSet);
+dmap = mtca4u_mex('get_dmap');
+ret = strcmp(dmapToSet,dmap)
+assert(ret == 1)
 m = mtca4u('DUMMY1');
 
 
