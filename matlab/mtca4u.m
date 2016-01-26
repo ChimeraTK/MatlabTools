@@ -41,12 +41,30 @@ classdef mtca4u < mtca4u_interface
 
 		function help()
         %mtca4u.help - 
+      try
+        mtca4u_mex('help');
+      catch ex
+        error(ex.message)
+      end
+		end
+    
+    function setDMapFilePath(~, varargin)
+        %mtca4u.setDMapFilePath - 
 		    try
-                mtca4u_mex('help');
-            catch ex
-                error(ex.message)
-            end
-		end		
+          mtca4u_mex('set_dmap', varargin{:});
+        catch ex
+          error(ex.message)
+        end
+		end
+    
+    function dmap = getDMapFilePath()
+        %mtca4u.setDMapFilePath - 
+		    try
+          damp = mtca4u_mex('get_dmap');
+        catch ex
+          error(ex.message)
+        end
+		end						
 		
 		function print_info(~, varargin)
         %mtca4u.print_info - Displays all available boards with additional information
@@ -81,7 +99,7 @@ classdef mtca4u < mtca4u_interface
         %mtca4u.mtca4u - Constructor of the Wrapper class
 		%
         function obj = mtca4u(board)
-			obj.device = board;
+            obj.device = board;
             try
                 %mtca4u_mex('refresh_dmap');
                 obj.handle = mtca4u_mex('open', obj.device);
@@ -106,7 +124,6 @@ classdef mtca4u < mtca4u_interface
                 error(ex.message);
             end   
             for i = info
-            %fprintf(['Name: ', i.name, '\t Elements: ']);
             end
         end
 

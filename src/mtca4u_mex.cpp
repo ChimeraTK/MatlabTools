@@ -18,7 +18,8 @@
 #include <stdexcept>
 
 #include <mex.h>
-
+#include <mtca4u/Utilities.h>
+#include <mtca4u/BackendFactory.h>
 #include <mtca4u/DMapFilesParser.h>
 #include <mtca4u/Device.h>
 #include <mtca4u/MultiplexedDataAccessor.h>
@@ -93,6 +94,8 @@ void writeRegister(unsigned int, mxArray**, unsigned int, const mxArray **);
 void readDmaRaw(unsigned int, mxArray**, unsigned int, const mxArray **);
 //void readDmaChannel(unsigned int, mxArray**, unsigned int, const mxArray **);
 void readSequence(unsigned int, mxArray**, unsigned int, const mxArray **);
+void setDMapFilePath(unsigned int, mxArray**, unsigned int, const mxArray **);
+void getDMapFilePath(unsigned int, mxArray**, unsigned int, const mxArray **);
 
 vector<Command> vectorOfCommands = {
   Command("help", &PrintHelp, "", ""),
@@ -110,6 +113,8 @@ vector<Command> vectorOfCommands = {
   Command("read_dma_raw", &readDmaRaw, "", ""),
   //Command("read_dma", &readDmaChannel, "", ""),
   Command("read_seq", &readSequence, "", ""),
+  Command("set_dmap", &setDMapFilePath, "", ""),
+  Command("get_dmap", &getDMapFilePath, "", "")
 };
 
 /**
@@ -215,13 +220,31 @@ void mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
   return openDevicesMap[deviceName];
 } */
 
+void getDMapFilePath(unsigned int, mxArray *plhs[], unsigned int, const mxArray **)
+{
+   plhs[0] = mxCreateString((mtca4u::BackendFactory::getInstance().getDMapFilePath()).c_str());
+}
+
+
+/**
+ * @brief setDMapFilePath 
+ *
+ */
+void setDMapFilePath(unsigned int, mxArray**, unsigned int nrhs, const mxArray *prhs[])
+{
+  if(nrhs < 1) mexErrMsgTxt("Not enough input params.");
+  if(nrhs > 1) mexWarnMsgTxt("Too many input arguments.");
+  std::string dMapFile = mxArrayToStdString(prhs[0]);
+  mtca4u::BackendFactory::getInstance().setDMapFilePath(dMapFile);
+  
+}
+
 /**
  * @brief getDevice
  *
  * @param[in] dmapFileName File to be loaded or all in the current directory if empty
  *
  */
-//boost::shared_ptr< devMap<devPCIE> > getDevice(const mxArray *prhsDevice) //, const string &dmapFileName = "")
 boost::shared_ptr<mtca4u::Device> getDevice(const mxArray *prhsDevice)
 {
   	 
@@ -273,40 +296,16 @@ void openDevice(unsigned int, mxArray *plhs[], unsigned int nrhs, const mxArray 
   if(nrhs < 1) mexErrMsgTxt("Not enough input arguments.");
   if(nrhs > 1) mexWarnMsgTxt("Too many input arguments.");
   
-  //dmapFilesParser parser(".");
-  DMapFilesParser parser(".");
-  
   std::string deviceName = mxArrayToStdString(prhs[0]);
   
-  // Look for device
-  //dmapFilesParser::iterator it = parser.begin();
-  DMapFilesParser::iterator it = parser.begin();
-  for (; it != parser.end(); ++it)
-  {
-    if (deviceName == it->first.deviceName)
-      break;
-  }
-
-  if(it == parser.end())
-    mexErrMsgTxt("Unknown device '" + deviceName + "'.");
-    
-
-  //open the devPCIE
-  //boost::shared_ptr<devPCIE> pdev( new devPCIE );
-  //pdev->openDev(it->first.dev_file, O_RDWR, NULL);
-  
-  //open the mapFile  
-  //openDevicesVector.push_back( boost::shared_ptr< devMap<devPCIE> > (new devMap< devPCIE >) );
   openDevicesVector.push_back( boost::shared_ptr<Device> ( new mtca4u::Device()) );
-  //openDevicesVector.back()->openDev( pdev, it->second ); //never thows
-  //openDevicesVector.back()->open( pdev, it->second ); //never thows
-  openDevicesVector.back()->open(it->first.deviceName);
+  openDevicesVector.back()->open(deviceName);
   
   plhs[0] = mxCreateDoubleMatrix(1, 1, mxREAL);
   (*mxGetPr(plhs[0])) = openDevicesVector.size()-1;
   
   #ifdef __MEX_DEBUG_MODE
-  mexPrintf("Successfully opened "+ deviceName + " at " + it->first.uri + "\n");
+  mexPrintf("Successfully opened "+ deviceName + "\n");
   #endif
 }
 
@@ -316,7 +315,7 @@ void openDevice(unsigned int, mxArray *plhs[], unsigned int nrhs, const mxArray 
  */
 void closeDevice(unsigned int, mxArray **, unsigned int nrhs, const mxArray *prhs[])
 {
-	mexPrintf("closeDevice");
+	
   if (nrhs < 1) mexErrMsgTxt("Not enough input arguments.");
   if (nrhs > 1) mexWarnMsgTxt("Too many input arguments.");
 
@@ -356,7 +355,7 @@ void getInfo(unsigned int nlhs, mxArray *plhs[], unsigned int nrhs, const mxArra
   if(nrhs > 0) mexWarnMsgTxt("Too many input arguments.");
   if(nlhs > 1) mexErrMsgTxt("Too many output arguments.");
 
-  //dmapFilesParser parser(".");
+  
   DMapFilesParser parser(".");
 
   mwSize dims[2] = {1, (int)parser.getdMapFileSize()};
@@ -374,10 +373,9 @@ void getInfo(unsigned int nlhs, mxArray *plhs[], unsigned int nrhs, const mxArra
     std::string date;
 
     try {
-      //devMap<devPCIE> tempDevice;
-      
+   
+      mtca4u::BackendFactory::getInstance().setDMapFilePath( it->first.dmapFileName );
       std::shared_ptr<Device> tempDevice( new Device());
-      //tempDevice.openDev(it->first.dev_file, it->first.map_file_name);
       tempDevice->open(it->first.deviceName);
 
       int firmware = 0;
@@ -404,11 +402,11 @@ void getInfo(unsigned int nlhs, mxArray *plhs[], unsigned int nrhs, const mxArra
  */
 void getDeviceInfo(unsigned int nlhs, mxArray ** plhs, unsigned int nrhs, const mxArray *prhs[])
 {
-std::cout<<"getDeviceInfo"<<std::endl;
+ 
   if(nrhs < 1) mexErrMsgTxt("Not enough input arguments.");
   if(nrhs > 1) mexWarnMsgTxt("Too many input arguments.");
   if(nlhs > 1) mexErrMsgTxt("Too many output arguments.");
-std::cout<<"no error"<<std::endl;
+
   //boost::shared_ptr< devMap<devPCIE> > device = getDevice(prhs[0]);
   boost::shared_ptr<mtca4u::Device> device = getDevice(prhs[0]);
 
@@ -442,7 +440,7 @@ std::cout<<"no error"<<std::endl;
 
     mxSetFieldByNumber(plhs[0], index, 5, mxCreateString(""));
   }
-  std::cout<<"index:"<<index<<std::endl;
+  
 }
 
 /**
@@ -451,6 +449,7 @@ std::cout<<"no error"<<std::endl;
  */
 void getRegisterInfo(unsigned int nlhs, mxArray *plhs[], unsigned int nrhs, const mxArray *prhs[])
 {
+  
   if(nrhs < 3) mexErrMsgTxt("Not enough input arguments.");
   if(nrhs > 3) mexWarnMsgTxt("Too many input arguments.");
   if(nlhs > 1) mexErrMsgTxt("Too many output arguments.");
