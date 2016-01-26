@@ -35,7 +35,7 @@ classdef mtca4u_remote < mtca4u_interface
 		board = [];
         channel = 0;
         c;
-        expected_tools_version = '00.05.00';
+        expected_tools_version = '00.08.00';
     end
     
     methods (Access = 'private')
