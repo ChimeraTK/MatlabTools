@@ -844,10 +844,10 @@ void readSequence(unsigned int nlhs, mxArray *plhs[], unsigned int nrhs, const m
     // copy and transform data
     for(unsigned int ic = 0; ic < selectedChannels; ic++)
     {
-      //unsigned 
+      
       int currentChannel = (nrhs > pp_channel) ? (mxGetPr(prhs[pp_channel])[ic] - 1) : ic;
-	  
-	  if (currentChannel < 0 || currentChannel >= totalChannels) mexErrMsgTxt("Illegal Channel Index");
+      
+	  if (currentChannel < 0 || uint32_t(currentChannel) >= totalChannels) mexErrMsgTxt("Illegal Channel Index");
 		  
       for(unsigned int is = 0; is < elements; is++)
       {
