@@ -785,8 +785,8 @@ void readSequence(unsigned int nlhs, mxArray *plhs[], unsigned int nrhs, const m
   if (nrhs < 3) mexErrMsgTxt("Not enough input arguments.");
   if (nrhs > 6) mexWarnMsgTxt("Too many input arguments.");
   
-  if (mxGetScalar(prhs[pp_channel]) == 0)
-    mexErrMsgTxt("channel index cannot be 0.");
+  /*if (mxGetScalar(prhs[pp_channel]) == 0)
+    mexErrMsgTxt("channel index cannot be 0.");*/
   
   //boost::shared_ptr< devMap<devPCIE> > device = getDevice(prhs[pp_device]);
   boost::shared_ptr<Device> device = getDevice(prhs[pp_device]);
@@ -811,8 +811,8 @@ void readSequence(unsigned int nlhs, mxArray *plhs[], unsigned int nrhs, const m
   
   const uint32_t totalChannels = reg->getNumberOfDataSequences();
   
-  if (mxGetScalar(prhs[pp_channel]) > totalChannels)
-    mexErrMsgTxt("Requested Channel Index greater than available channels");
+  /*if (mxGetScalar(prhs[pp_channel]) > totalChannels)
+    mexErrMsgTxt("Requested Channel Index greater than available channels");*/
    
   const uint32_t size = elements*totalChannels;
   std::vector<double> dmaValue(size);
