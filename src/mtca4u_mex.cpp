@@ -520,7 +520,7 @@ void getRegisterSize(unsigned int nlhs, mxArray *plhs[], unsigned int nrhs, cons
 void readRegister(unsigned int nlhs, mxArray *plhs[], unsigned int nrhs, const mxArray *prhs[])
 {
   static const unsigned int pp_device = 0, pp_module = 1, pp_register = 2, pp_offset = 3, pp_elements = 4;
-  std::cout<<"readRegister"<<std::endl;
+  
   if (nrhs < 3) mexErrMsgTxt("Not enough input arguments.");
   if (nrhs > 5) mexWarnMsgTxt("To many input arguments.");
   if (nlhs > 1) mexErrMsgTxt("To many output arguments.");
@@ -784,7 +784,10 @@ void readSequence(unsigned int nlhs, mxArray *plhs[], unsigned int nrhs, const m
   
   if (nrhs < 3) mexErrMsgTxt("Not enough input arguments.");
   if (nrhs > 6) mexWarnMsgTxt("Too many input arguments.");
-    
+  
+  if (mxGetScalar(prhs[pp_channel]) == 0)
+    mexErrMsgTxt("channel index cannot be 0.");
+  
   //boost::shared_ptr< devMap<devPCIE> > device = getDevice(prhs[pp_device]);
   boost::shared_ptr<Device> device = getDevice(prhs[pp_device]);
    
@@ -807,6 +810,9 @@ void readSequence(unsigned int nlhs, mxArray *plhs[], unsigned int nrhs, const m
   const uint32_t elements = (nrhs > pp_elements) ? mxGetScalar(prhs[pp_elements]) : ((*reg)[0].size());
   
   const uint32_t totalChannels = reg->getNumberOfDataSequences();
+  
+  if (mxGetScalar(prhs[pp_channel]) > totalChannels)
+    mexErrMsgTxt("Requested Channel Index greater than available channels");
    
   const uint32_t size = elements*totalChannels;
   std::vector<double> dmaValue(size);
