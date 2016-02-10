@@ -1,6 +1,7 @@
 %%
 %
-
+mtca4u_mex('set_dmap','dummies.dmap');
+m = mtca4u('DUMMY1');
 % Syntax of read:  module, register, [offset], [elements]
 
 %% Check Basic read functions with know return values
