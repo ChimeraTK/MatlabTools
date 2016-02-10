@@ -34,6 +34,9 @@ init_remote.m :
 test_remote_init.m :
 	cat test_remote_init.m.in | sed "{s/__USER__/"$(USER)"/}" | sed "{s|__HOME__|"$(HOME)"|}" > $@
 
+../example/example.m :
+  $(shell ../example/print_all_devices_reference.in)
+
 "/dev/mtcadummys0" : 
 	modprobe mtcadummy
 
