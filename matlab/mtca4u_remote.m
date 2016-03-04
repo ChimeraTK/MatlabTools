@@ -160,6 +160,8 @@ classdef mtca4u_remote < mtca4u_interface
             channel2.execCommand([obj.remote_executable, ' version']);
             version = ReadStdout(obj, channel2);
 
+            % The command execution does not fail, even if the executable is not there.
+	    % Perform a check that the correct version is reportet to make sure the executable is reachable
             % strncmp(x,y,5) : only compare major and minor version
             assert(strncmp(version, obj.required_tools_version,5), ['Wrong command line tools installed on the remote side. Expected ''', obj.required_tools_version,''' but found ''', version])
 
