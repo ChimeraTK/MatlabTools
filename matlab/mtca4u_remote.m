@@ -35,7 +35,7 @@ classdef mtca4u_remote < mtca4u_interface
 		board = [];
         channel = 0;
         c;
-        expected_tools_version = '00.08.00';
+        expected_tools_version = '00.09.01';
     end
     
     methods (Access = 'private')
@@ -157,9 +157,9 @@ classdef mtca4u_remote < mtca4u_interface
             channel2 = obj.channel.openSession();
             channel2.execCommand('mtca4u version');
             version = ReadStdout(obj, channel2);
-            if ~strcmp(version, obj.expected_tools_version)
-              warning(['Wrong command line tools installed on create cpu. Expected ''', obj.expected_tools_version,''' but found ''', version]);
-            end
+
+	    assert(strcmp(version, obj.expected_tools_version), ['Wrong command line tools installed on the remote side. Expected ''', obj.expected_tools_version,''' but found ''', version])
+
             channel2.close();
         end
         
