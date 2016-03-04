@@ -35,7 +35,9 @@ classdef mtca4u_remote < mtca4u_interface
 		board = [];
         channel = 0;
         c;
-        expected_tools_version = '00.09.01';
+        required_tools_version = '00.09';
+        %remote_executable = strcat('mtca4u-', self.required_tools_version);
+        remote_executable = 'mtca4u-00.09';
     end
     
     methods (Access = 'private')
@@ -155,10 +157,11 @@ classdef mtca4u_remote < mtca4u_interface
             end
             % Check tools version
             channel2 = obj.channel.openSession();
-            channel2.execCommand('mtca4u version');
+            channel2.execCommand([obj.remote_executable, ' version']);
             version = ReadStdout(obj, channel2);
 
-	    assert(strcmp(version, obj.expected_tools_version), ['Wrong command line tools installed on the remote side. Expected ''', obj.expected_tools_version,''' but found ''', version])
+            % strncmp(x,y,5) : only compare major and minor version
+            assert(strncmp(version, obj.required_tools_version,5), ['Wrong command line tools installed on the remote side. Expected ''', obj.required_tools_version,''' but found ''', version])
 
             channel2.close();
         end
@@ -166,7 +169,7 @@ classdef mtca4u_remote < mtca4u_interface
         function result = version(obj,~)
         %mtca4u_remote.version - Shows the version of the remote tools
         %
-          cmd = ['cd ''', obj.path, ''' && mtca4u version'];
+          cmd = ['cd ''', obj.path, ''' && ''', obj.remote_executable ,''' version'];
           if obj.debug, disp(['Run: ', cmd]); end
           channel2 = obj.channel.openSession();
           channel2.execCommand(cmd);
@@ -208,7 +211,7 @@ classdef mtca4u_remote < mtca4u_interface
         %    module - Name of the module
         %    register - Name of the register
         %
-          cmd = ['cd ''', obj.path, ''' && mtca4u register_size ', obj.board, ' ', createCLTString(obj, varargin)];
+          cmd = ['cd ''', obj.path, ''' && ''', obj.remote_executable ,''' register_size ', obj.board, ' ', createCLTString(obj, varargin)];
           if obj.debug, disp(['Run: ', cmd]); end
           channel2 = obj.channel.openSession();
           channel2.execCommand(cmd);
@@ -243,7 +246,7 @@ classdef mtca4u_remote < mtca4u_interface
         %
         %
         % See also: mtca4u , mtca4u.write
-          cmd = ['cd ''', obj.path, ''' && mtca4u read ', obj.board, ' ', createCLTString(obj, varargin)];
+          cmd = ['cd ''', obj.path, ''' && ''', obj.remote_executable ,''' read ', obj.board, ' ', createCLTString(obj, varargin)];
           if obj.debug, disp(['Run: ', cmd]); end
           channel2 = obj.channel.openSession();
           channel2.execCommand(cmd);
@@ -272,7 +275,7 @@ classdef mtca4u_remote < mtca4u_interface
         %    offset - Start element of the writing (optional, default: 0)
         %
         % See also: mtca4u, mtca4u.read
-            cmd = ['cd ''', obj.path, ''' && mtca4u write ', obj.board, ' ', createCLTString(obj, varargin)];
+            cmd = ['cd ''', obj.path, ''' && ''', obj.remote_executable ,''' write ', obj.board, ' ', createCLTString(obj, varargin)];
             if obj.debug, disp(['Run: ', cmd]); end
             channel2 = obj.channel.openSession();
             channel2.execCommand(cmd);
@@ -313,7 +316,7 @@ classdef mtca4u_remote < mtca4u_interface
         %    data - Value/s of the DAQ Block
         %
         % See also: mtca4u, mtca4u.read, mtca4u.write
-          cmd = ['cd ''', obj.path, ''' && mtca4u read_dma ', obj.board, ' ', createCLTString(obj, varargin)];
+          cmd = ['cd ''', obj.path, ''' && ''', obj.remote_executable ,''' read_dma ', obj.board, ' ', createCLTString(obj, varargin)];
           if obj.debug, disp(['Run: ', cmd]); end
           channel2  =  obj.channel.openSession();
           channel2.execCommand(cmd);
@@ -349,7 +352,7 @@ classdef mtca4u_remote < mtca4u_interface
         %    data - Values of the sequence(s)
         %
         % See also: mtca4u, mtca4u.read, mtca4u.write
-          cmd = ['cd ''', obj.path, ''' && mtca4u read_seq ', obj.board, ' ', createCLTString(obj, varargin)];
+          cmd = ['cd ''', obj.path, ''' && ''', obj.remote_executable ,''' read_seq ', obj.board, ' ', createCLTString(obj, varargin)];
           if obj.debug, disp(['Run: ', cmd]); end
           channel2  =  obj.channel.openSession();
           channel2.execCommand(cmd);
