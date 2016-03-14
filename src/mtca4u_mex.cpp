@@ -419,7 +419,7 @@ void getDeviceInfo(unsigned int nlhs, mxArray ** plhs, unsigned int nrhs, const 
   plhs[0] = mxCreateStructMatrix(map->getMapFileSize(), 1, (sizeof(field_names)/sizeof(*field_names)), field_names);
 
   unsigned int index = 0;
-  for (std::vector<RegisterInfoMap::RegisterInfo>::const_iterator cit = map->begin(); cit != map->end(); ++cit, ++index) {
+  for (RegisterInfoMap::const_iterator cit = map->begin(); cit != map->end(); ++cit, ++index) {
 	  mxSetFieldByNumber(plhs[0], index, 0, mxCreateString(cit->name.c_str()));
 
     mxArray *numElements = mxCreateDoubleMatrix(1,1,mxREAL);
