@@ -1,8 +1,13 @@
 classdef mtca4u < mtca4u_interface
   %mtca4u Wrapper class for the MicroTCA4u API
-  %   
-  % mtca4u Methods:
-  %   print_info - Displays all available boards with additional information
+  %
+  % mtca4u Methods (static):
+  %  version - Displays the MicroTCA4u Matlab Tools library version 
+  %  setDMapFilePath - Sets the DMap file which will be used
+  %  getDMapFilePath - Displays the current used DMap file
+  %  print_info - Displays all available boards with additional information
+  %
+  % mtca4u Methods (class):
   %   print_device_info - Displays all available registers of a board
   %   print_register_info - Displays all information of a certain register
   %   get_register_size - Returns the size of a register
@@ -11,6 +16,12 @@ classdef mtca4u < mtca4u_interface
   %   read_dma_raw - Reads raw data from a board using direct memory access
   %   read_dma - Reads data from a board using direct memory access
   %   read_seq - Reads a sequence from the dma area
+  %
+  % Example:
+  %   mtca4u.version();
+  %   mtca4u.setDMapFilePath('./devices.dmap'); 
+  %   dev = mtca4u('SISL')
+  %   dev.read('BOARD.0','WORD_FIRMWARE');
   %
   
   % Autor:
@@ -47,8 +58,16 @@ classdef mtca4u < mtca4u_interface
         error(ex.message)
       end
 		end
-    
-    function setDMapFilePath(~, varargin)
+    %mtca4u.setDMapFilePath - Sets the DMap file which will be used
+    %
+    % Syntax:
+    %    mtca4u.setDMapFilePath(path)
+    %
+    % Inputs:
+    %    path - path of the dmap file
+    %
+    % See also: mtca4u, mtca4u.getDMapFilePath
+    function setDMapFilePath(varargin)
         %mtca4u.setDMapFilePath - 
 		    try
           mtca4u_mex('set_dmap', varargin{:});
@@ -56,7 +75,12 @@ classdef mtca4u < mtca4u_interface
           error(ex.message)
         end
 		end
-    
+        %mtca4u.getDMapFilePath - Displays all available boards with additional information
+        %
+        % Syntax:
+        %    mtca4u.getDMapFilePath()
+        %
+        % See also: mtca4u, mtca4u.setDMapFilePath
     function dmap = getDMapFilePath()
         %mtca4u.setDMapFilePath - 
 		    try
