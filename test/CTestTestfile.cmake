@@ -7,7 +7,7 @@ ADD_TEST(local_read "./mleval" "run init_local; run test_read.m" "-s")
 ADD_TEST(local_write "./mleval" "run init_local; run test_write.m" "-s")
 ADD_TEST(example "./mleval" "run init_local; run ../example/example.m" "-s")
 
-ADD_TEST(local_device_info "./mleval" "run init_local; run test_device_info.m")
+#ADD_TEST(local_device_info "./mleval" "run init_local; run test_device_info.m")
 
 ADD_TEST(remote_init "./mleval" "run test_remote_init.m" "-s")
 #the init remote automatically checks the version. test_version only checks the local version, thus was duplicate
