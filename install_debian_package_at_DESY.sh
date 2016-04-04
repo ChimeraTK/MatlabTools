@@ -13,8 +13,16 @@
 
 DEBIAN_CODENAME=`lsb_release -c | sed "{s/Codename:\s*//}"`
 PACKAGE_FILES_WILDCARDS="mtca4u-matlab-tools*.deb mtca4u-matlab-tools*.changes"
+PACKAGE_DEB_WILDCARDS="mtca4u-matlab-tools*.deb"
 
 cd debian_package
+
+# Check that there are debian packages and return an error if not
+ls *.deb > /dev/null
+if [ $? -ne 0 ]; then
+    echo No debian packages found. Run \'make debian_package\' first.
+    exit 1
+fi
 
 # Step 1: Remove an older version of the package
 # -- from the nfs archive
@@ -30,7 +38,7 @@ umask 002
 sg flash -c "cp ${PACKAGE_FILES_WILDCARDS} /home/debian/${DEBIAN_CODENAME}/stable"
 
 # Step 3: Install to the repository (only desy intern)
-for FILE in *.deb; do
+for FILE in ${PACKAGE_DEB_WILDCARDS}; do
     ssh doocspkgs sudo -H reprepro --waitforlock 2 -Vb \
 	/export/reprepro/intern/doocs includedeb ${DEBIAN_CODENAME} \
 	/home/debian/${DEBIAN_CODENAME}/stable/${FILE}
