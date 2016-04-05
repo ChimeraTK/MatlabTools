@@ -31,11 +31,11 @@ fi
 ssh doocspkgs sudo -H reprepro --waitforlock 2 -Vb \
     /export/reprepro/intern/doocs remove ${DEBIAN_CODENAME} mtca4u-matlab-tools
 
-# Step 2: Set the priviledges and the priviledge mask for new files to rw-rw-r--
+# Step 2: Set the privileges to rw-rw-r--
 chmod 664 ${PACKAGE_FILES_WILDCARDS}
-umask 002
 # -- and copy the files to the nfs archive, using sg to copy with the flash group as target group
-sg flash -c "cp ${PACKAGE_FILES_WILDCARDS} /home/debian/${DEBIAN_CODENAME}/stable"
+# and umask to keep the privileges
+sg flash -c "umask 002; cp ${PACKAGE_FILES_WILDCARDS} /home/debian/${DEBIAN_CODENAME}/stable"
 
 # Step 3: Install to the repository (only desy intern)
 for FILE in ${PACKAGE_DEB_WILDCARDS}; do
