@@ -24,13 +24,18 @@ test -d debian_from_template || exit -2
 #We only allow to make debian packages from tagged versions.
 #For this we check out the tag from svn to make sure it's there, and build
 #the package from this checkout to make sure the code has not been modified.
-CHECKOUT_DIRECTORY=${PWD}/debian_package/${TAG_VERSION}
+CHECKOUT_DIRECTORY=${PWD}/debian_package/mtca4u-matlab-tools-${TAG_VERSION}
+ORIGINAL_BUILD_DIR=${PWD}
 
 rm -rf debian_package
 mkdir debian_package
-svn co https://svnsrv.desy.de/desy/mtca4u_applications/matlab_tools/tags/${TAG_VERSION} ${CHECKOUT_DIRECTORY}
+#we have to do clone and checkout in two steps because git 1.7.9.5 on Ubuntu12.4 does not
+#support 'git clone -b <tag_name>' yet
+git clone https://github.com/ChimeraTK/MatlabTools.git ${CHECKOUT_DIRECTORY}
+cd ${CHECKOUT_DIRECTORY}
+git checkout ${TAG_VERSION}
 
-cp -r debian_from_template ${CHECKOUT_DIRECTORY}/debian
+cp -r ${ORIGINAL_BUILD_DIR}/debian_from_template ${CHECKOUT_DIRECTORY}/debian
 
 cd ${CHECKOUT_DIRECTORY}
 
