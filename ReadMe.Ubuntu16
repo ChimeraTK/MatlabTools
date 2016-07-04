@@ -1,0 +1,10 @@
+When running on Ubuntu 16.04 (or 14.04) you have to trick Matlab into loading
+the standard C++ from the system instead of the one that comes with matlab.
+
+Do this by adding LD_PRELOAD in front of your 'matlab' call:
+
+$ LD_PRELOAD=/usr/lib/x86_64-linux-gnu/libstdc++.so.6 matlab
+
+Attention: This is quite some hack!
+DO NOT EXPORT LD_PRELOAD, WHICH WOULD RUN IT FOR ALL COMMANDS, WHICH IS DANGEROUS!
+Only use LD_PRELOAD directly before the command which needs it!

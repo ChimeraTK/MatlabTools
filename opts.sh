@@ -49,7 +49,7 @@ echo "Error: Did not imbed 'options.sh' code"; exit 1 #imbed options.sh glnx86 1
         glnxa64)
 #----------------------------------------------------------------------------
             RPATH="-Wl,-rpath-link,$TMW_ROOT/bin/$Arch"
-            CC='gcc-4.6'
+            CC='gcc'
             CFLAGS='-std=c++0x -D_GNU_SOURCE'
             CFLAGS="$CFLAGS  -fexceptions"
             CFLAGS="$CFLAGS $MFLAGS"
@@ -58,7 +58,7 @@ echo "Error: Did not imbed 'options.sh' code"; exit 1 #imbed options.sh glnx86 1
             CDEBUGFLAGS='-g'
             CLIBS="$CLIBS -lstdc++"
 #
-            CXX='g++-4.6'
+            CXX='g++'
             CXXFLAGS='-std=c++0x -D_GNU_SOURCE'
             CXXFLAGS="$CXXFLAGS $MCXXFLAGS -DGLNXA64 -DGCC"
             CXXLIBS="$RPATH $MCXXLIBS -ldl -lm"
