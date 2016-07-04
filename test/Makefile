@@ -47,6 +47,7 @@ clean :
 	rm -rf *.gcda *.gcno
 	rm -rf test_version.m
 	rm -rf Testing
+	rm -rf ../example/print_all_devices_reference
 
 debug:
 	DEBUG_FLAGS="-O0 --coverage -L../bin -lmtca4u_mex" make all
