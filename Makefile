@@ -72,7 +72,7 @@ clean:
 
 system_install: all
 	test -d /local/lib || mkdir -p /local/lib
-	cp -d bin/mtca4u_mex.mexa64 bin/mtca4u_mex.$(MTCA4U_MATLAB_VERSION).mexa64 matlab/mtca4u.m /local/lib
+	cp -d bin/mtca4u_mex.mexa64 bin/mtca4u_mex.$(MTCA4U_MATLAB_VERSION).mexa64 matlab/mtca4u.m matlab/mtca4u_interface.m /local/lib
 
 #A target which replaces the version number in the control files for the debian packaging
 configure-package-files:
