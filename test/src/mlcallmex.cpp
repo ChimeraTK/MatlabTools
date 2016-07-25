@@ -44,8 +44,11 @@ int main(int argc, const char *argv[])
   }
 
   /* grab mexFunction handle */
-  mexFunction_t mexfunction = (mexFunction_t)dlsym(handle, "mexFunction");
-  if (!mexfunction) {
+  mexFunction_t * mexfunction_ptr;
+  // Sorry, verry ugly conversion to get rid off all compiler warnings.
+  // See 'man 3 dlsym'
+  *(void **)(&mexfunction_ptr) = dlsym(handle, "mexFunction");
+  if (!(*mexfunction_ptr)) {
     fprintf(stderr, "MEX file does not contain mexFunction\n");
     return -1;
   }
@@ -80,11 +83,11 @@ int main(int argc, const char *argv[])
     }
 
     /* execute the mex function */
-    mexfunction(1, pargout, 3, pargin);
+    (*mexfunction_ptr)(1, pargout, 3, pargin);
   }
 
   /* execute the mex function */
-  /* mexfunction(0, pargout, 0, pargin); */
+  /* (*mexfunction_ptr)(0, pargout, 0, pargin); */
 
   /* print the results using MATLAB engine */
   engPutVariable(ep, "result", pargout[0]);
