@@ -4,7 +4,7 @@ include ../matlab_root
 CXX = g++
 LD = g++
 MCXXFLAGS=-I$(MATLAB_ROOT)/extern/include
-MCXXLIBS=-L$(MATLAB_ROOT)/bin/glnxa64 -leng -lmx
+MCXXLIBS=-L$(MATLAB_ROOT)/bin/glnxa64 -leng -lmx -ldl
 CFLAGS += -g -Wall -Wextra -Wshadow -pedantic -Wuninitialized -std=c++0x $(DEBUG_FLAGS)
 CXXFLAGS += -g -Wall -Wextra -Wshadow -pedantic -Wuninitialized -std=c++0x -fPIC $(DEBUG_FLAGS) $(MCXXFLAGS)
 LDFLAGS += -std=c++0x $(DEBUG_FLAGS) $(MCXXLIBS) 
