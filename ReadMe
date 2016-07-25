@@ -1,7 +1,47 @@
-Please set these varaibles before you run make.
+Prerequisits:
 
-1- MATLAB_ROOT
-Set this variable in the file matlab_root before make. e.g., MATLAB_ROOT=/usr/local/MATLAB/R2014b
+Appart from Matlab you need the following software (debian package names in paratheses)
+* g++ and make (build-essentials)
+* mtca4u/ChimeraTK DeviceAccess development libraries (libmtca4u-deviceaccess-dev)
 
-2- MTCA4U_MATLAB_VERSION
-Set this variable in the file mtca4u_matlab_version e.g., MTCA4U_MATLAB_VERSION=00.03.00
+For testing (optional), you also need
+* ctest (cmake)
+* the mtcadummy kernel module (mtcadummy-dkms)
+* csh (csh)
+* the mtca4u command line tools (mtca4u-command-line-tools, optional)
+
+Preparation: 
+
+* For a production context (you are not developing/debugging the mtca4u MatlabTools themselves) it is usually recommended to use the latest tag.
+  ~/MatlabTools$ git remote update
+  ~/MatlabTools$ git fetch --tags
+  (not needed if you just cloned the repository)
+  ~/MatlabTools$ git tag 
+  (lists all tags, look for the latest)
+  ~/MatlabTools$ git checkout 00.04.06
+   
+* Set the MATLAB_ROOT variable in the file matlab_root to point to your matlab installation, e.g. MATLAB_ROOT=/usr/local/MATLAB/R2014b
+
+Complitation:
+
+* Just run 'make'
+You might get warnings like the following, which you can ignore (tested for Ubuntu14.04 and 16.04):
+"Warning: You are using gcc version '5.3.1'. The version of gcc is not supported. The version currently supported with MEX is '4.7.x'. For a list of currently supported compilers see: http://www.mathworks.com/support/compilers/current_release.
+"
+Appart from that you should not get any warnings or errors.
+
+Testing (optional):
+* run 'make test'
+  -- As with Matlab itself on Ubuntu 14.04 and 16.04, you have to add the LD_PRELOAD to 'make test' (see ReadMe.Ubuntu16)
+     'LD_PRELOAD=/usr/lib/x86_64-linux-gnu/libstdc++.so.6 make test'
+  -- If the "remote" tests are failing you can ignore this for the moment. You have to set up a password-less ssh-key login
+     to you local machine and have the correct version of the mtca4u command line tools for the "remote" tests to work.
+     The local library tests with the direct bindings should all work. 
+
+Installation:
+
+* Run 'sudo make system_install'. This will install to /local/lib
+* Add /local/lib to your Matlab path. You can store the path in you local pathdef file to make this permanent.
+  In Matlab:
+    addpath /local/lib
+    savepath ~/pathdef.m
