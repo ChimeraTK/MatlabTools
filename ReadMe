@@ -18,7 +18,7 @@ Preparation:
   (not needed if you just cloned the repository)
   ~/MatlabTools$ git tag 
   (lists all tags, look for the latest)
-  ~/MatlabTools$ git checkout 00.04.06
+  ~/MatlabTools$ git checkout 00.04.07
    
 * Set the MATLAB_ROOT variable in the file matlab_root to point to your matlab installation, e.g. MATLAB_ROOT=/usr/local/MATLAB/R2014b
 
