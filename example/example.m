@@ -14,25 +14,20 @@
 %   Open dummy device
 %   Use DUMMY2 to have the modern interface with modules
 %
+%   Print all devices in map file 
+delete('print_all_devices.txt'); 
+diary('print_all_devices.txt');
+mtca4u.print_info();
+diary off;
+[status,cmdout] = system('diff print_all_devices.txt print_all_devices_reference');
+assert(status == 0)
+
 dmapToSet = 'dummies.dmap'
 mtca4u_mex('set_dmap', dmapToSet);
 dmap = mtca4u_mex('get_dmap');
 ret = strcmp(dmapToSet,dmap)
 assert(ret == 1)
-m = mtca4u('DUMMY1');
-
-
-m.help();
-
-%
-%   Print all devices in map file 
-delete('print_all_devices.txt'); 
-diary('print_all_devices.txt');
-m.print_info();
-diary off;
-
-[status,cmdout] = system('diff print_all_devices.txt print_all_devices_reference');
-assert(status == 0)
+m = mtca4u('DUMMY3');
 
 %
 %   Print some device info
@@ -43,7 +38,13 @@ m.print_device_info();
 diary off;
 [status,cmdout] = system('diff print_device_info.txt print_device_info_reference');
 assert(status == 0)
+
+m.help();
+
 %
+
+
+
 %   Read FIRMWARE and COMPILATION values and print them
 %
 fprintf('WORD_FIRMWARE = %d\n',m.read('BOARD', 'WORD_FIRMWARE'));
