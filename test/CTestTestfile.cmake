@@ -5,7 +5,7 @@ ADD_TEST(local_open_close "./mleval" "run test_local_open_close.m" "-s")
 ADD_TEST(local_version "./mleval" "run init_local; run test_version.m" "-s")
 ADD_TEST(local_read "./mleval" "run init_local; run test_read.m" "-s")
 ADD_TEST(local_write "./mleval" "run init_local; run test_write.m" "-s")
-ADD_TEST(example "./mleval" "run init_local; run ../example/example.m" "-s")
+ADD_TEST(example "./mleval" "run ../example/example.m" "-s")
 
 #ADD_TEST(local_device_info "./mleval" "run init_local; run test_device_info.m")
 
