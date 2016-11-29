@@ -130,7 +130,7 @@ classdef mtca4u < mtca4u_interface
             catch ex
                 error(ex.message)
             end
-            obj.c = onCleanup(@()obj.delete()); % "Register" the destructor
+            %obj.c = onCleanup(@()obj.delete()); % "Register" the destructor
             % Todo: this works only if it is not possible to change the
             % handle after the creation!
         end
