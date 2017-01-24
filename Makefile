@@ -12,7 +12,7 @@ include matlab_root
 #Get the libraries
 DeviceAccess_LIB_FLAGS=$(shell mtca4u-deviceaccess-config --ldflags)
 
-LDFLAGS= $$LDFLAGS -w -std=c++0x $(DEBUG_FLAGS) $(DeviceAccess_LIB_FLAGS)
+LDFLAGS= $$LDFLAGS -w -std=c++0x -Wl,--no-as-needed $(DEBUG_FLAGS) $(DeviceAccess_LIB_FLAGS)
 
 #Mex requires to have the library path in special manner so use mexflags commands.
 DeviceAccess_MEX_FLAGS=$(shell mtca4u-deviceaccess-config --mexflags)
