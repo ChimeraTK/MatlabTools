@@ -658,8 +658,9 @@ void readDmaRaw(unsigned int nlhs, mxArray *plhs[], unsigned int nrhs, const mxA
   const bool signedFlag = (nrhs > pp_signed) ? mxGetBoolScalar(prhs[pp_signed]): 0;
   const uint32_t bits = (nrhs > pp_bit) ? mxGetScalar(prhs[pp_bit]) : mode;
   const uint32_t fracBits = (nrhs > pp_fracbit) ? mxGetScalar(prhs[pp_fracbit]) : 0;
-  FixedPointConverter conv(bits, fracBits, signedFlag);
-  
+  FixedPointConverter conv(reg->getRegisterInfo().module+"/"+reg->getRegisterInfo().name,
+			   bits, fracBits, signedFlag);
+
   plhs[0] = mxCreateDoubleMatrix(elements, 1, mxREAL);
   double *plhsValue = mxGetPr(plhs[0]);
   
@@ -721,7 +722,8 @@ void readDmaChannel(unsigned int nlhs, mxArray *plhs[], unsigned int nrhs, const
   const bool signedFlag = (nrhs > pp_signed) ? mxGetBoolScalar(prhs[pp_signed]): 0;
   const uint32_t bits = (nrhs > pp_bit) ? mxGetScalar(prhs[pp_bit]) : mode;
   const uint32_t fracBits = (nrhs > pp_fracbit) ? mxGetScalar(prhs[pp_fracbit]) : 0;
-  FixedPointConverter conv(bits, fracBits, signedFlag);
+  FixedPointConverter conv(reg->getRegisterInfo().module+"/"+reg->getRegisterInfo().name,
+                           bits, fracBits, signedFlag);
   
   if (mode == 32) 
     innerRawDMARead<int32_t>(reg, &dmaValue[0], size, offset, conv);
