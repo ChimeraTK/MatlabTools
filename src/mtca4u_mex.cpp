@@ -699,13 +699,13 @@ void readSequence(unsigned int nlhs, mxArray *plhs[], unsigned int nrhs, const m
   if ((nrhs > pp_offset) && !mxIsRealScalar(prhs[pp_offset])) mexErrMsgTxt("Invalid " + getOrdinalNumerString(pp_offset) + " input argument.");
   if ((nrhs > pp_elements) && !mxIsPositiveRealScalar(prhs[pp_elements])) mexErrMsgTxt("Invalid " + getOrdinalNumerString(pp_elements) + " input argument.");
   
-  boost::shared_ptr<MultiplexedDataAccessor<double>> reg = device->getCustomAccessor<MultiplexedDataAccessor<double>>(mxArrayToStdString(prhs[pp_register]),mxArrayToStdString(prhs[pp_module]));
-  reg->read();
+  auto twoDRegister = device->getTwoDRegisterAccessor<double>(mxArrayToStdString(prhs[pp_module])+"/"+mxArrayToStdString(prhs[pp_register]));
+  twoDRegister.read();
   
   const uint32_t offset = (nrhs > pp_offset) ? mxGetScalar(prhs[pp_offset]): 0;
-  const uint32_t elements = (nrhs > pp_elements) ? mxGetScalar(prhs[pp_elements]) : ((*reg)[0].size());
+  const uint32_t elements = (nrhs > pp_elements) ? mxGetScalar(prhs[pp_elements]) : (twoDRegister[0].size());
   
-  const uint32_t totalChannels = reg->getNumberOfDataSequences();
+  const uint32_t totalChannels = twoDRegister.getNumberOfDataSequences();
   
   /*if (mxGetScalar(prhs[pp_channel]) > totalChannels)
     mexErrMsgTxt("Requested Channel Index greater than available channels");*/
@@ -727,7 +727,7 @@ void readSequence(unsigned int nlhs, mxArray *plhs[], unsigned int nrhs, const m
       {
         unsigned int seqIndex = (is+offset);
         if (seqIndex >= size) mexErrMsgTxt("Data storage indexing went wrong!");
-        plhsValue[is] = (*reg)[currentChannel][seqIndex];
+        plhsValue[is] = twoDRegister[currentChannel][seqIndex];
       }
     }
   }
@@ -753,7 +753,7 @@ void readSequence(unsigned int nlhs, mxArray *plhs[], unsigned int nrhs, const m
         if (seqIndex >= size) mexErrMsgTxt("Data storage indexing went wrong! (1)");
         if (plhsIndex >= elements*selectedChannels) mexErrMsgTxt("Data storage indexing went wrong! (2)");
 
-        plhsValue[plhsIndex] = (*reg)[currentChannel][seqIndex];
+        plhsValue[plhsIndex] = twoDRegister[currentChannel][seqIndex];
       }
     }
   }
