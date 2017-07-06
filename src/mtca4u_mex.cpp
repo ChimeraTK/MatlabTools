@@ -32,6 +32,11 @@ using namespace std;
 typedef MultiplexedDataAccessor<double> dma_accessor;
 typedef boost::shared_ptr<MultiplexedDataAccessor<double>> dma_Accessor_ptr;
 
+template <typename UserType>
+void writeToDevice(boost::shared_ptr<Device> &device,
+                     const std::string &registerPath, void *data,
+                     size_t numberOfwords, size_t Offset);
+
 // Some c++ wrapper and utility functions
 
 void mexPrintf(const std::string &s) { mexPrintf(s.c_str()); }
@@ -570,34 +575,34 @@ void writeRegister(unsigned int, mxArray **, unsigned int nrhs, const mxArray *p
   if ((nrhs > pp_offset) && (!mxIsRealScalar(prhs[pp_offset]) ||(mxGetScalar(prhs[pp_offset]) < 0)))
     mexErrMsgTxt("Invalid " + getOrdinalNumerString(pp_offset) + " input argument.");
 
-  //boost::shared_ptr<devMap<devPCIE>::RegisterAccessor> reg = device->getRegisterAccessor(mxArrayToStdString(prhs[pp_register]), mxArrayToStdString(prhs[pp_module]));
-  boost::shared_ptr<Device::RegisterAccessor> reg = device->getRegisterAccessor(mxArrayToStdString(prhs[pp_register]), mxArrayToStdString(prhs[pp_module]));
-
-  const uint32_t offset = (nrhs > pp_offset) ? mxGetScalar(prhs[pp_offset]) : 0;
-
   mxClassID arrayType = mxGetClassID(prhs[pp_value]);
   size_t prhsValueElements = mxGetNumberOfElements(prhs[pp_value]);
   void *data = mxGetData(prhs[pp_value]);
 
+  const uint32_t offset = (nrhs > pp_offset) ? mxGetScalar(prhs[pp_offset]) : 0;
+  std::string registerPath = mxArrayToStdString(prhs[pp_register]) + '.' +  mxArrayToStdString(prhs[pp_module]);
+  boost::shared_ptr<Device::RegisterAccessor> reg;
+
+
   // TODO: Extract this to a method if this has to be used else where
   if (arrayType == mxDOUBLE_CLASS) {
-    reg->write(static_cast<double *>(data), prhsValueElements, offset);
+    writeToDevice<double>(device, registerPath, data, prhsValueElements, offset);
   } else if (arrayType == mxUINT8_CLASS) {
-    reg->write(static_cast<uint8_t *>(data), prhsValueElements, offset);
+    writeToDevice<uint8_t>(device, registerPath, data, prhsValueElements, offset);
   } else if (arrayType == mxINT8_CLASS) {
-    reg->write(static_cast<int8_t *>(data), prhsValueElements, offset);
+    writeToDevice<int8_t>(device, registerPath, data, prhsValueElements, offset);
   } else if (arrayType == mxINT16_CLASS) {
-    reg->write(static_cast<int16_t *>(data), prhsValueElements, offset);
+    writeToDevice<int16_t>(device, registerPath, data, prhsValueElements, offset);
   } else if (arrayType == mxUINT16_CLASS) {
-    reg->write(static_cast<uint16_t *>(data), prhsValueElements, offset);
+    writeToDevice<uint16_t>(device, registerPath, data, prhsValueElements, offset);
   } else if (arrayType == mxINT32_CLASS) {
-    reg->write(static_cast<int32_t *>(data), prhsValueElements, offset);
+    writeToDevice<int32_t>(device, registerPath, data, prhsValueElements, offset);
   } else if (arrayType == mxUINT32_CLASS) {
-    reg->write(static_cast<uint32_t *>(data), prhsValueElements, offset);
+    writeToDevice<uint32_t>(device, registerPath, data, prhsValueElements, offset);
   } else if (arrayType == mxINT64_CLASS) {
-    reg->write(static_cast<int64_t *>(data), prhsValueElements, offset);
+    writeToDevice<int64_t>(device, registerPath, data, prhsValueElements, offset);
   } else if (arrayType == mxUINT64_CLASS) {
-    reg->write(static_cast<uint64_t *>(data), prhsValueElements, offset);
+    writeToDevice<uint64_t>(device, registerPath, data, prhsValueElements, offset);
   } else {
     mexErrMsgTxt("Data type unsupported.");
   }
@@ -757,4 +762,19 @@ void readSequence(unsigned int nlhs, mxArray *plhs[], unsigned int nrhs, const m
       }
     }
   }
+}
+
+template <typename UserType>
+void writeToDevice(boost::shared_ptr<Device> &device,
+                     const std::string &registerPath, void *data_,
+                     size_t numberOfwords, size_t offset) {
+
+  auto data = static_cast<UserType*>(data_);
+  auto accessor = device->getOneDRegisterAccessor<UserType>(
+      registerPath, numberOfwords, offset);
+
+  for (unsigned int i = 0; i < numberOfwords; ++i) {
+    accessor[i] = data[i];
+  }
+  accessor.write();
 }
