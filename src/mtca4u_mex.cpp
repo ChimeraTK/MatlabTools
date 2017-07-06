@@ -580,8 +580,7 @@ void writeRegister(unsigned int, mxArray **, unsigned int nrhs, const mxArray *p
   void *data = mxGetData(prhs[pp_value]);
 
   const uint32_t offset = (nrhs > pp_offset) ? mxGetScalar(prhs[pp_offset]) : 0;
-  std::string registerPath = mxArrayToStdString(prhs[pp_register]) + '.' +  mxArrayToStdString(prhs[pp_module]);
-  boost::shared_ptr<Device::RegisterAccessor> reg;
+  std::string registerPath = mxArrayToStdString(prhs[pp_module]) + '/' + mxArrayToStdString(prhs[pp_register]) ;
 
 
   // TODO: Extract this to a method if this has to be used else where
