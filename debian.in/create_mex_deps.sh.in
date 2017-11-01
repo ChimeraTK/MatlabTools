@@ -3,15 +3,20 @@
 #drop out in case of an error
 set -e
 
-#determine the libmtca4u-deviceaccess the mex is linked with, incl. version
-MAPPED_DEVICE_LIB=`ldd mtca4u-matlab-tools/local/lib/mtca4u_mex.@MTCA4U_MATLAB_VERSION@.mexa64\
-     | grep "libmtca4u-deviceaccess.so" | sed "{s|^.*=> ||}" | sed "{s| (.*$||}"`
+#determine the libreries the mex is linked with, incl. versions
+for lib in libmtca4u-deviceaccess.so libboost_; do
+    LIBS+=`ldd mtca4u-matlab-tools/local/lib/mtca4u_mex.@MTCA4U_MATLAB_VERSION@.mexa64\
+     | grep "${lib}" | sed "{s|^.*=> ||}" | sed "{s| (.*$| |}"`
+done
 
+echo $LIBS
 #get the package name which provides the MAPPED_DEVICE_LIB\
 #The command is split in two to see the error status of the dpkg command.
 #This script should stop with an error of dpkg cannot fulfill it's dependencies
-DPKG_SEARCH_RESULT=`dpkg -S ${MAPPED_DEVICE_LIB}`
-MAPPED_DEVICE_PACKAGE=`echo ${DPKG_SEARCH_RESULT} | sed "{s|:.*$||}"`
+for versionedLib in ${LIBS} ;do
+  DPKG_SEARCH_RESULT=`dpkg -S ${versionedLib}`
+  DEPENDENCIES+=`echo ${DPKG_SEARCH_RESULT} | sed "{s|:.*$|, |}"`
+done
 
 #add the dependency to the substvars file
-echo mex:Depends=${MAPPED_DEVICE_PACKAGE} >> mtca4u-matlab-tools.substvars 
+echo mex:Depends=${DEPENDENCIES} >> mtca4u-matlab-tools.substvars 
