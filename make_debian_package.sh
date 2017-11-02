@@ -29,11 +29,9 @@ ORIGINAL_BUILD_DIR=${PWD}
 
 rm -rf debian_package
 mkdir debian_package
-#we have to do clone and checkout in two steps because git 1.7.9.5 on Ubuntu12.4 does not
-#support 'git clone -b <tag_name>' yet
-git clone https://github.com/ChimeraTK/MatlabTools.git ${CHECKOUT_DIRECTORY}
-cd ${CHECKOUT_DIRECTORY}
-git checkout ${TAG_VERSION}
+
+# clone from the checkout copy because doocsdev16 does not have internet connection
+git clone . -b ${TAG_VERSION} ${CHECKOUT_DIRECTORY}
 
 cp -r ${ORIGINAL_BUILD_DIR}/debian_from_template ${CHECKOUT_DIRECTORY}/debian
 
