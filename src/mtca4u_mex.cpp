@@ -18,15 +18,15 @@
 #include <stdexcept>
 
 #include <mex.h>
-#include <mtca4u/Utilities.h>
-#include <mtca4u/BackendFactory.h>
-#include <mtca4u/DMapFilesParser.h>
-#include <mtca4u/Device.h>
-#include <mtca4u/MultiplexedDataAccessor.h>
+#include <ChimeraTK/Utilities.h>
+#include <ChimeraTK/BackendFactory.h>
+#include <ChimeraTK/DMapFilesParser.h>
+#include <ChimeraTK/Device.h>
+#include <ChimeraTK/MultiplexedDataAccessor.h>
 
 #include "../include/version.h"
 
-using namespace mtca4u;
+using namespace ChimeraTK;
 using namespace std;
 
 typedef MultiplexedDataAccessor<double> dma_accessor;
@@ -68,14 +68,14 @@ string mxArrayToStdString(const mxArray *pa)  { char *ps = mxArrayToString(pa); 
 // Function declaration
 
 //static void CleanUp(void); // Should me declared static (See Matlab MEX Manual)
-boost::shared_ptr<mtca4u::Device> getDevice(const mxArray *plhsDevice);
+boost::shared_ptr<Device> getDevice(const mxArray *plhsDevice);
 //boost::shared_ptr< devMap<devPCIE> > getDevice(const mxArray *plhsDevice);
 
 // Global Parameter
 
 //std::vector<boost::shared_ptr< devMap<devPCIE> > > openDevicesVector;
 bool isInit = false; // Used to initalize stuff at the first run
-std::vector<boost::shared_ptr<mtca4u::Device> > openDevicesVector;
+std::vector<boost::shared_ptr<Device> > openDevicesVector;
 
 // Command Function declarations and stuff
 
@@ -137,7 +137,7 @@ void mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
 
   // Initalize basic stuff
   if (isInit == false) {
-    mtca4u::BackendFactory::getInstance().setDMapFilePath("./devices.dmap");
+    ChimeraTK::setDMapFilePath("./devices.dmap");
     // mexAtExit(CleanUp); // register Cleanup Function
     isInit = true;
   }
@@ -234,7 +234,7 @@ void mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
 
 void getDMapFilePath(unsigned int, mxArray *plhs[], unsigned int, const mxArray **)
 {
-   plhs[0] = mxCreateString((mtca4u::BackendFactory::getInstance().getDMapFilePath()).c_str());
+   plhs[0] = mxCreateString((BackendFactory::getInstance().getDMapFilePath()).c_str());
 }
 
 
@@ -247,7 +247,7 @@ void setDMapFilePath(unsigned int, mxArray**, unsigned int nrhs, const mxArray *
   if(nrhs < 1) mexErrMsgTxt("Not enough input params.");
   if(nrhs > 1) mexWarnMsgTxt("Too many input arguments.");
   std::string dMapFile = mxArrayToStdString(prhs[0]);
-  mtca4u::BackendFactory::getInstance().setDMapFilePath(dMapFile);
+  ChimeraTK::setDMapFilePath(dMapFile);
 }
 
 /**
@@ -256,7 +256,7 @@ void setDMapFilePath(unsigned int, mxArray**, unsigned int nrhs, const mxArray *
  * @param[in] dmapFileName File to be loaded or all in the current directory if empty
  *
  */
-boost::shared_ptr<mtca4u::Device> getDevice(const mxArray *prhsDevice)
+boost::shared_ptr<Device> getDevice(const mxArray *prhsDevice)
 {
   if (!mxIsRealScalar(prhsDevice))
     mexErrMsgTxt("Invalid device handle.");
@@ -308,7 +308,7 @@ void openDevice(unsigned int, mxArray *plhs[], unsigned int nrhs, const mxArray 
 
   std::string deviceName = mxArrayToStdString(prhs[0]);
 
-  openDevicesVector.push_back( boost::shared_ptr<Device> ( new mtca4u::Device()) );
+  openDevicesVector.push_back( boost::shared_ptr<Device> ( new Device()) );
   openDevicesVector.back()->open(deviceName);
 
   plhs[0] = mxCreateDoubleMatrix(1, 1, mxREAL);
@@ -381,7 +381,7 @@ void getInfo(unsigned int nlhs, mxArray *plhs[], unsigned int nrhs, const mxArra
     std::string date;
 
     try {
-      mtca4u::BackendFactory::getInstance().setDMapFilePath( it->first.dmapFileName );
+      ChimeraTK::setDMapFilePath( it->first.dmapFileName );
       std::shared_ptr<Device> tempDevice( new Device());
       tempDevice->open(it->first.deviceName);
 
@@ -414,9 +414,9 @@ void getDeviceInfo(unsigned int nlhs, mxArray ** plhs, unsigned int nrhs, const 
   if(nlhs > 1) mexErrMsgTxt("Too many output arguments.");
 
   //boost::shared_ptr< devMap<devPCIE> > device = getDevice(prhs[0]);
-  boost::shared_ptr<mtca4u::Device> device = getDevice(prhs[0]);
+  boost::shared_ptr<Device> device = getDevice(prhs[0]);
 
-  const boost::shared_ptr<const mtca4u::RegisterInfoMap> map = device->getRegisterMap();
+  const boost::shared_ptr<const RegisterInfoMap> map = device->getRegisterMap();
 
   const char *field_names[] = {"name", "elements", "signed", "bits", "fractional_bits", "description"};
 
