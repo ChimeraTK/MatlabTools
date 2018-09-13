@@ -4,7 +4,7 @@
 set -e
 
 #determine the libreries the mex is linked with, incl. versions
-for lib in libmtca4u-deviceaccess.so libboost_; do
+for lib in libChimeraTK-DeviceAccess.so libboost_; do
     LIBS+=`ldd mtca4u-matlab-tools/local/lib/mtca4u_mex.@MTCA4U_MATLAB_VERSION@.mexa64\
      | grep "${lib}" | sed "{s|^.*=> ||}" | sed "{s| (.*$| |}"`
 done

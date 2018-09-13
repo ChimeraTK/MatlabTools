@@ -10,13 +10,13 @@ include matlab_root
 
 
 #Get the libraries
-DeviceAccess_LIB_FLAGS=$(shell mtca4u-deviceaccess-config --ldflags)
+DeviceAccess_LIB_FLAGS=$(shell ChimeraTK-DeviceAccess-config --ldflags)
 
 LDFLAGS= $$LDFLAGS -w -std=c++0x -Wl,--no-as-needed $(DEBUG_FLAGS) $(DeviceAccess_LIB_FLAGS)
 
 #Mex requires to have the library path in special manner so use mexflags commands.
-DeviceAccess_MEX_FLAGS=$(shell mtca4u-deviceaccess-config --mexflags)
-CXXFLAGS += $(shell mtca4u-deviceaccess-config --cppflags)
+DeviceAccess_MEX_FLAGS=$(shell ChimeraTK-DeviceAccess-config --mexflags)
+CXXFLAGS += $(shell ChimeraTK-DeviceAccess-config --cppflags)
 
 MEXEXT = $(shell $(MATLAB_ROOT)/bin/mexext)
 

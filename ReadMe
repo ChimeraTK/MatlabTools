@@ -2,7 +2,7 @@ Prerequisits:
 
 Appart from Matlab you need the following software (debian package names in paratheses)
 * g++ and make (build-essentials)
-* mtca4u/ChimeraTK DeviceAccess development libraries (libmtca4u-deviceaccess-dev)
+* ChimeraTK DeviceAccess development libraries (chimeratk-deviceaccess-dev)
 
 For testing (optional), you also need
 * ctest (cmake)
