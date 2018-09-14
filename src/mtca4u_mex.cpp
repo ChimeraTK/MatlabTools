@@ -23,6 +23,7 @@
 #include <ChimeraTK/DMapFilesParser.h>
 #include <ChimeraTK/Device.h>
 #include <ChimeraTK/MultiplexedDataAccessor.h>
+#include <ChimeraTK/RegisterPath.h>
 
 #include "../include/version.h"
 
@@ -446,6 +447,15 @@ void getDeviceInfo(unsigned int nlhs, mxArray ** plhs, unsigned int nrhs, const 
   }
 }
 
+std::string getFundamentalTypeString( ChimeraTK::RegisterInfo::FundamentalType fundamentalType){
+  if (fundamentalType ==  RegisterInfo::FundamentalType::numeric)   return "numeric";
+  if (fundamentalType ==  RegisterInfo::FundamentalType::string)    return "string";
+  if (fundamentalType ==  RegisterInfo::FundamentalType::boolean)   return "boolean";
+  if (fundamentalType ==  RegisterInfo::FundamentalType::nodata)    return "nodata";
+  if (fundamentalType ==  RegisterInfo::FundamentalType::undefined) return "undefined";
+  return "unknown";
+}
+
 /**
  * @brief getRegisterInfo
  *
@@ -456,39 +466,57 @@ void getRegisterInfo(unsigned int nlhs, mxArray *plhs[], unsigned int nrhs, cons
   if(nrhs > 3) mexWarnMsgTxt("Too many input arguments.");
   if(nlhs > 1) mexErrMsgTxt("Too many output arguments.");
 
-  //boost::shared_ptr< devMap<devPCIE> > device = getDevice(prhs[0]);
-  boost::shared_ptr<Device> device = getDevice(prhs[0]);
-
   if (!mxIsChar(prhs[1])) mexErrMsgTxt("Invalid " +  getOrdinalNumerString(2) + " input argument.");
-  if (!mxIsChar(prhs[2])) mexErrMsgTxt("Invalid " +  getOrdinalNumerString(2) + " input argument.");
+  if (!mxIsChar(prhs[2])) mexErrMsgTxt("Invalid " +  getOrdinalNumerString(3) + " input argument.");
 
-  //boost::shared_ptr<devMap<devPCIE>::RegisterAccessor> reg = device->getRegisterAccessor(mxArrayToStdString(prhs[2]), mxArrayToStdString(prhs[1]));
-  boost::shared_ptr<Device::RegisterAccessor> reg = device->getRegisterAccessor(mxArrayToStdString(prhs[2]), mxArrayToStdString(prhs[1]));
-  RegisterInfoMap::RegisterInfo regInfo = reg->getRegisterInfo();
+  auto device = getDevice(prhs[0]);
+  auto & registerCatalogue = device->getRegisterCatalogue();
 
-  //mwSize dims[2] = {1, 1};
-  const char *field_names[] = {"name", "elements", "signed", "bits", "fractional_bits", "description"};
+  RegisterPath moduleName( mxArrayToStdString(prhs[1]) );
+  RegisterPath registerName( mxArrayToStdString(prhs[2]) );
+  auto registerInfo = registerCatalogue.getRegister(moduleName/registerName);
+  auto & dataDescriptor = registerInfo->getDataDescriptor();
+ 
+  //                    index: 0       1                      2            3              4                  5              6          7
+  const char *field_names[] = {"name", "nElementsPerChannel", "nChannels", "nDimensions", "fundamentalType", "isIntegral", "isSigned", "description"};
   plhs[0] = mxCreateStructMatrix(1, 1, (sizeof(field_names)/sizeof(*field_names)), field_names);
 
-  mxSetFieldByNumber(plhs[0], 0, 0, mxCreateString(regInfo.name.c_str()));
+  mxSetFieldByNumber(plhs[0], 0, 0, mxCreateString(std::string(registerInfo->getRegisterName()).c_str()));
 
   mxArray *numElements = mxCreateDoubleMatrix(1,1,mxREAL);
-  *mxGetPr(numElements) = regInfo.nElements;
+  *mxGetPr(numElements) = registerInfo->getNumberOfElements();
   mxSetFieldByNumber(plhs[0], 0, 1, numElements);
 
+  mxArray *numChannels = mxCreateDoubleMatrix(1,1,mxREAL);
+  *mxGetPr(numChannels) = registerInfo->getNumberOfChannels();
+  mxSetFieldByNumber(plhs[0], 0, 2, numChannels);
+
+  mxArray *numDimensions = mxCreateDoubleMatrix(1,1,mxREAL);
+  *mxGetPr(numDimensions) = registerInfo->getNumberOfDimensions();
+  mxSetFieldByNumber(plhs[0], 0, 3, numDimensions);
+
+  auto fundamentalType =  dataDescriptor.fundamentalType();
+
+  mxSetFieldByNumber(plhs[0], 0, 4, mxCreateString(getFundamentalTypeString(fundamentalType).c_str()));
+
+  bool isIntegral =  false; // default value in case the data type is not numeric
+  bool isSigned = false; // default value in case the data type is not numeric
+  if (fundamentalType ==  RegisterInfo::FundamentalType::numeric){
+    // These operations on the data descriptor are only valid for numeric types.
+    // They will throw otherwise.
+    isIntegral = dataDescriptor.isIntegral();
+    isSigned = dataDescriptor.isSigned();
+  }
+  
   mxArray *signedFlag = mxCreateLogicalMatrix(1,1);
-  *mxGetPr(signedFlag) = regInfo.signedFlag;
-  mxSetFieldByNumber(plhs[0], 0, 2, signedFlag);
+  *mxGetPr(signedFlag) = isSigned;
+  mxSetFieldByNumber(plhs[0], 0, 5, signedFlag);
 
-  mxArray *numBits = mxCreateDoubleMatrix(1,1,mxREAL);
-  *mxGetPr(numBits) = regInfo.width;
-  mxSetFieldByNumber(plhs[0], 0, 3, numBits);
+  mxArray *integralFlag = mxCreateLogicalMatrix(1,1);
+  *mxGetPr(integralFlag) = isIntegral;
+  mxSetFieldByNumber(plhs[0], 0, 6, integralFlag);
 
-  mxArray *numFractionalBits = mxCreateDoubleMatrix(1,1,mxREAL);
-  *mxGetPr(numFractionalBits) = regInfo.nFractionalBits;
-  mxSetFieldByNumber(plhs[0], 0, 4, numFractionalBits);
-
-  mxSetFieldByNumber(plhs[0], 0, 5, mxCreateString(""));
+  mxSetFieldByNumber(plhs[0], 0, 6, mxCreateString(""));
 }
 
 /**
