@@ -286,7 +286,7 @@ void PrintHelp(unsigned int, mxArray **, unsigned int, const mxArray **)
   {
     mexPrintf("\t" + it->Name + "\n");
   }
-  mexPrintf("\n\nFor further help or bug reports please contact michael.heuer@desy.de");
+  mexPrintf("\n\nFor further help or bug reports please contact chimeratk-support@desy.de\n");
 }
 
 /**
@@ -534,11 +534,12 @@ void getRegisterSize(unsigned int nlhs, mxArray *plhs[], unsigned int nrhs, cons
   if (!mxIsChar(prhs[1])) mexErrMsgTxt("Invalid " +  getOrdinalNumerString(1) + " input argument.");
   if (!mxIsChar(prhs[2])) mexErrMsgTxt("Invalid " +  getOrdinalNumerString(2) + " input argument.");
 
-  //boost::shared_ptr<devMap<devPCIE>::RegisterAccessor> reg = device->getRegisterAccessor(mxArrayToStdString(prhs[2]), mxArrayToStdString(prhs[1]));
-  boost::shared_ptr<Device::RegisterAccessor> reg = device->getRegisterAccessor(mxArrayToStdString(prhs[2]), mxArrayToStdString(prhs[1]));
+  RegisterPath moduleName( mxArrayToStdString(prhs[1]) );
+  RegisterPath registerName( mxArrayToStdString(prhs[2]) );
+  auto reg = device->getOneDRegisterAccessor<double>(moduleName/registerName);
 
   plhs[0] = mxCreateDoubleMatrix(1, 1, mxREAL);
-  (*mxGetPr(plhs[0])) = reg->getRegisterInfo().nElements;
+  (*mxGetPr(plhs[0])) = reg.getNElements();
 }
 
 /**
@@ -566,16 +567,21 @@ void readRegister(unsigned int nlhs, mxArray *plhs[], unsigned int nrhs, const m
   if ((nrhs > pp_elements) && !mxIsPositiveRealScalar(prhs[pp_elements]))
     mexErrMsgTxt("Invalid " + getOrdinalNumerString(pp_elements) + " input argument.");
 
-  boost::shared_ptr<Device::RegisterAccessor> reg = device->getRegisterAccessor(mxArrayToStdString(prhs[pp_register]),mxArrayToStdString(prhs[pp_module]));
-
+  // offset is optional. Use 0 if not set
   const uint32_t offset = (nrhs > pp_offset) ? mxGetScalar(prhs[pp_offset]) : 0;
-  //if(offset == 0) mexErrMsgTxt("Subscript indices must be real positive integers. Instead of C/C++ the first element in MATLAB is 1.");
 
-  const uint32_t elements = (nrhs > pp_elements) ? mxGetScalar(prhs[pp_elements]) : (reg->getRegisterInfo().nElements - offset);
+  // number of elements is optional. Use 0 (=all remaining) if not set
+  const uint32_t nElements = (nrhs > pp_elements) ? mxGetScalar(prhs[pp_elements]) : 0;
 
-  plhs[0] = mxCreateDoubleMatrix(1, elements, mxREAL);
+  RegisterPath moduleName( mxArrayToStdString(prhs[pp_module]) );
+  RegisterPath registerName( mxArrayToStdString(prhs[pp_register]) );
+  // we get the register content as a std::vector<double>
+  auto registerContent = device->read<double>(moduleName/registerName, nElements, offset);
+
+  // as both DeviceAccess and Matlab do their own memory allocation all we can do is memcpy :-(
+  plhs[0] = mxCreateDoubleMatrix(1, registerContent.size(), mxREAL);
   double *plhsValue = mxGetPr(plhs[0]);
-  reg->read(plhsValue, elements, offset);
+  memcpy( plhsValue, registerContent.data(), registerContent.size()*sizeof(double));
 }
 
 /**
