@@ -383,15 +383,13 @@ void getInfo(unsigned int nlhs, mxArray *plhs[], unsigned int nrhs, const mxArra
 
     try {
       ChimeraTK::setDMapFilePath( it->first.dmapFileName );
-      std::shared_ptr<Device> tempDevice( new Device());
-      tempDevice->open(it->first.deviceName);
+      Device tempDevice;
+      tempDevice.open(it->first.deviceName);
 
-      int firmware = 0;
-      tempDevice->readReg("BOARD0", "WORD_FIRMWARE", &firmware);
+      int firmware = tempDevice.read<int>("BOARD0/WORD_FIRMWARE");
       *mxGetPr(firmware_value) = firmware;
 
-      int timestamp = 0;
-      tempDevice->readReg("BOARD0", "WORD_TIMESTAMP", &timestamp);
+      int timestamp = tempDevice.read<int>("BOARD0/WORD_TIMESTAMP");
       date = timestamp;
     }
     catch(...) { }
