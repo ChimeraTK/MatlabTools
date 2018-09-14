@@ -508,15 +508,15 @@ void getRegisterInfo(unsigned int nlhs, mxArray *plhs[], unsigned int nrhs, cons
     isSigned = dataDescriptor.isSigned();
   }
   
-  mxArray *signedFlag = mxCreateLogicalMatrix(1,1);
-  *mxGetPr(signedFlag) = isSigned;
-  mxSetFieldByNumber(plhs[0], 0, 5, signedFlag);
-
   mxArray *integralFlag = mxCreateLogicalMatrix(1,1);
   *mxGetPr(integralFlag) = isIntegral;
-  mxSetFieldByNumber(plhs[0], 0, 6, integralFlag);
+  mxSetFieldByNumber(plhs[0], 0, 5, integralFlag);
 
-  mxSetFieldByNumber(plhs[0], 0, 6, mxCreateString(""));
+  mxArray *signedFlag = mxCreateLogicalMatrix(1,1);
+  *mxGetPr(signedFlag) = isSigned;
+  mxSetFieldByNumber(plhs[0], 0, 6, signedFlag);
+
+  mxSetFieldByNumber(plhs[0], 0, 7, mxCreateString(""));
 }
 
 /**
