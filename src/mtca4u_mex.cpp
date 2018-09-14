@@ -402,6 +402,15 @@ void getInfo(unsigned int nlhs, mxArray *plhs[], unsigned int nrhs, const mxArra
   }
 }
 
+std::string getFundamentalTypeString( ChimeraTK::RegisterInfo::FundamentalType fundamentalType){
+  if (fundamentalType ==  RegisterInfo::FundamentalType::numeric)   return "numeric";
+  if (fundamentalType ==  RegisterInfo::FundamentalType::string)    return "string";
+  if (fundamentalType ==  RegisterInfo::FundamentalType::boolean)   return "boolean";
+  if (fundamentalType ==  RegisterInfo::FundamentalType::nodata)    return "nodata";
+  if (fundamentalType ==  RegisterInfo::FundamentalType::undefined) return "undefined";
+  return "unknown";
+}
+
 /**
  * @brief getDeviceInfo
  *
@@ -415,43 +424,35 @@ void getDeviceInfo(unsigned int nlhs, mxArray ** plhs, unsigned int nrhs, const 
   //boost::shared_ptr< devMap<devPCIE> > device = getDevice(prhs[0]);
   boost::shared_ptr<Device> device = getDevice(prhs[0]);
 
-  const boost::shared_ptr<const RegisterInfoMap> map = device->getRegisterMap();
+  auto & registerCatalogue = device->getRegisterCatalogue();
 
-  const char *field_names[] = {"name", "elements", "signed", "bits", "fractional_bits", "description"};
+  //                    index: 0       1            2            3              4                  5
+  const char *field_names[] = {"name", "nElementsPerChannel", "nChannels", "nDimensions", "fundamentalType", "description"};
 
-  plhs[0] = mxCreateStructMatrix(map->getMapFileSize(), 1, (sizeof(field_names)/sizeof(*field_names)), field_names);
+  plhs[0] = mxCreateStructMatrix(registerCatalogue.getNumberOfRegisters(), 1, (sizeof(field_names)/sizeof(*field_names)), field_names);
 
   unsigned int index = 0;
-  for (RegisterInfoMap::const_iterator cit = map->begin(); cit != map->end(); ++cit, ++index) {
-	  mxSetFieldByNumber(plhs[0], index, 0, mxCreateString(cit->name.c_str()));
+  for (RegisterInfoMap::const_iterator cit = registerCatalogue.begin(); cit != registerCatalogue.end(); ++cit, ++index) {
+
+    mxSetFieldByNumber(plhs[0], index, 0, mxCreateString(std::string(cit->getRegisterName()).c_str()));
 
     mxArray *numElements = mxCreateDoubleMatrix(1,1,mxREAL);
-    *mxGetPr(numElements) = cit->nElements;
+    *mxGetPr(numElements) = cit->getNumberOfElements();
     mxSetFieldByNumber(plhs[0], index, 1, numElements);
 
-    mxArray *signedFlag = mxCreateLogicalMatrix(1,1);
-    *mxGetPr(signedFlag) = cit->signedFlag;
-    mxSetFieldByNumber(plhs[0], index, 2, signedFlag);
+    mxArray *numChannels = mxCreateDoubleMatrix(1,1,mxREAL);
+    *mxGetPr(numChannels) = cit->getNumberOfChannels();
+    mxSetFieldByNumber(plhs[0], index, 2, numChannels);
 
-    mxArray *numBits = mxCreateDoubleMatrix(1,1,mxREAL);
-    *mxGetPr(numBits) = cit->width;
-    mxSetFieldByNumber(plhs[0], index, 3, numBits);
+    mxArray *numDimensions = mxCreateDoubleMatrix(1,1,mxREAL);
+    *mxGetPr(numDimensions) = cit->getNumberOfDimensions();
+    mxSetFieldByNumber(plhs[0], index, 3, numDimensions);
 
-    mxArray *numFractionalBits = mxCreateDoubleMatrix(1,1,mxREAL);
-    *mxGetPr(numFractionalBits) = cit->nFractionalBits;
-    mxSetFieldByNumber(plhs[0], index, 4, numFractionalBits);
-
+    auto fundamentalType =  cit->getDataDescriptor().fundamentalType();
+    mxSetFieldByNumber(plhs[0], index, 4, mxCreateString(getFundamentalTypeString(fundamentalType).c_str()));
+    
     mxSetFieldByNumber(plhs[0], index, 5, mxCreateString(""));
   }
-}
-
-std::string getFundamentalTypeString( ChimeraTK::RegisterInfo::FundamentalType fundamentalType){
-  if (fundamentalType ==  RegisterInfo::FundamentalType::numeric)   return "numeric";
-  if (fundamentalType ==  RegisterInfo::FundamentalType::string)    return "string";
-  if (fundamentalType ==  RegisterInfo::FundamentalType::boolean)   return "boolean";
-  if (fundamentalType ==  RegisterInfo::FundamentalType::nodata)    return "nodata";
-  if (fundamentalType ==  RegisterInfo::FundamentalType::undefined) return "undefined";
-  return "unknown";
 }
 
 /**

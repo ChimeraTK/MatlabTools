@@ -146,9 +146,16 @@ classdef mtca4u < mtca4u_interface
                 info = mtca4u_mex('device_info', obj.handle, varargin{:});
             catch ex
                 error(ex.message);
-            end   
-            for i = info
             end
+            fprintf('FIXME: Not implemented yet\n')
+              %FIXME: This does not work. I need to learn more about Matlab to get it running.
+            %for reg = info
+            %  for i = reg
+            %    fprintf(['Name: ', i.name, '\t nElementsPerChannel: ', num2str(i.nElementsPerChannel), ...
+            %    '\t nChannels: ', num2str(i.nChannels), '\t nDimensions: ', num2str(i.nDimensions), ...
+            %    '\t FundamentalType: ', i.fundamentalType, '\t Description: ', num2str(i.description),'\n']);
+            %  end
+            %end
         end
 
         function print_register_info(obj, varargin)
