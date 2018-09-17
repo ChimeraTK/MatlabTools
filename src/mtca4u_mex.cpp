@@ -679,33 +679,57 @@ void readDmaRaw(unsigned int nlhs, mxArray *plhs[], unsigned int nrhs, const mxA
   if ((nrhs > pp_elements) && !mxIsPositiveRealScalar(prhs[pp_elements])) mexErrMsgTxt("Invalid " + getOrdinalNumerString(pp_elements) + " input argument.");
 
   if ((nrhs > pp_mode) && !mxIsPositiveRealScalar(prhs[pp_mode])) mexErrMsgTxt("Invalid " + getOrdinalNumerString(pp_mode) + " input argument.");
+
+  // FIXME: These don't make sense in raw mode. Shall we just skip the checks? They are not used anyway.
   if ((nrhs > pp_signed) && !mxIsRealScalar(prhs[pp_signed])) mexErrMsgTxt("Invalid " + getOrdinalNumerString(pp_signed) + " input argument.");
   if ((nrhs > pp_bit) && !mxIsPositiveRealScalar(prhs[pp_bit])) mexErrMsgTxt("Invalid " + getOrdinalNumerString(pp_bit) + " input argument.");
   if ((nrhs > pp_fracbit) && !mxIsRealScalar(prhs[pp_fracbit])) mexErrMsgTxt("Invalid " + getOrdinalNumerString(pp_fracbit) + " input argument.");
 
-  //boost::shared_ptr<devMap<devPCIE>::RegisterAccessor> reg = device->getRegisterAccessor(mxArrayToStdString(prhs[pp_register]), mxArrayToStdString(prhs[pp_module]));
-  boost::shared_ptr<Device::RegisterAccessor> reg = device->getRegisterAccessor(mxArrayToStdString(prhs[pp_register]), mxArrayToStdString(prhs[pp_module]));
-  
+  // offset is optional. Use 0 if not set
   const uint32_t offset = (nrhs > pp_offset) ? mxGetScalar(prhs[pp_offset]) : 0;
-  const uint32_t elements = (nrhs > pp_elements) ? mxGetScalar(prhs[pp_elements]) : (reg->getRegisterInfo().nElements - offset);
+  // number of elements is optional. Use 0 (=all remaining) if not set
+  const uint32_t nElements = (nrhs > pp_elements) ? mxGetScalar(prhs[pp_elements]) : 0;
     
+  // The mode can be 16 or 32 bit. This does not make sense because the real raw stuff is 32 bits,
+  // it was there so we keep it in order not to break compatibility. 
   const uint32_t mode = (nrhs > pp_mode) ? mxGetScalar(prhs[pp_mode]): 32;
   if ((mode != 32) && (mode != 16)) mexErrMsgTxt("Invalid data mode.");
-  
-  const bool signedFlag = (nrhs > pp_signed) ? mxGetBoolScalar(prhs[pp_signed]): 0;
-  const uint32_t bits = (nrhs > pp_bit) ? mxGetScalar(prhs[pp_bit]) : mode;
-  const uint32_t fracBits = (nrhs > pp_fracbit) ? mxGetScalar(prhs[pp_fracbit]) : 0;
-  FixedPointConverter conv(reg->getRegisterInfo().module+"/"+reg->getRegisterInfo().name,
-			   bits, fracBits, signedFlag);
 
-  plhs[0] = mxCreateDoubleMatrix(elements, 1, mxREAL);
+  // Number of 32 bit words to read through the "bus". This currently is the only mode the raw accessor knows
+  uint32_t nWords32Bit=nElements;
+  if (mode==16){
+    // The number of 32 bit words is only half the number of elements if the are requested as 16 bit
+    nWords32Bit/=2;
+  }  
+
+  // Notice: signedFlags, bits and fracBits have been removed as they were not/cannot be used anyway
+
+  // Now that we have all parameters it's time to read the data from the device.
+  RegisterPath moduleName( mxArrayToStdString(prhs[pp_module]) );
+  RegisterPath registerName( mxArrayToStdString(prhs[pp_register]) );
+
+  // we get the register content as a std::vector<double>
+  auto accessor = device->getOneDRegisterAccessor<int32_t>(moduleName/registerName, nWords32Bit, offset, {AccessMode::raw});
+  accessor.read();
+
+  // now fill it to the matlab output buffer
+  plhs[0] = mxCreateDoubleMatrix(nElements, 1, mxREAL);
   double *plhsValue = mxGetPr(plhs[0]);
-  
-  if (mode == 32)
-    innerRawDMARead<int32_t>(reg, plhsValue, elements, offset, conv);
-  else
-    innerRawDMARead<int16_t>(reg, plhsValue, elements, offset, conv);
+
+  if (mode == 32){
+    size_t i = 0;
+    // we can directly loop the accessor
+    for (auto value : accessor){
+      plhsValue[i++]=value;
+    }
+  }else{
+    auto values16Bit = reinterpret_cast<int16_t *>(accessor.data());
+    for (size_t i = 0; i < nElements; ++i){
+       plhsValue[i]=values16Bit[i];
+    }
+  }
 }
+
 /**
  * @brief readSequence
  *
