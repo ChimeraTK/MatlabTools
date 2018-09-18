@@ -27,6 +27,7 @@ mtca4u_mex('set_dmap', dmapToSet);
 dmap = mtca4u_mex('get_dmap');
 ret = strcmp(dmapToSet,dmap)
 assert(ret == 1)
+fprintf('opening dummy3\n');
 m = mtca4u('DUMMY3');
 
 %

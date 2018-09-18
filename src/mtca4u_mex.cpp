@@ -766,7 +766,7 @@ void readSequence(unsigned int nlhs, mxArray *plhs[], unsigned int nrhs, const m
   const uint32_t offset = (nrhs > pp_offset) ? mxGetScalar(prhs[pp_offset]): 0;
   const uint32_t elements = (nrhs > pp_elements) ? mxGetScalar(prhs[pp_elements]) : (twoDRegister[0].size());
   
-  const uint32_t totalChannels = twoDRegister.getNumberOfDataSequences();
+  const uint32_t totalChannels = twoDRegister.getNChannels();
   
   /*if (mxGetScalar(prhs[pp_channel]) > totalChannels)
     mexErrMsgTxt("Requested Channel Index greater than available channels");*/
