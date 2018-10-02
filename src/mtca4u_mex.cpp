@@ -145,8 +145,8 @@ void mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
     // dmap file later if needed.
     try{
       ChimeraTK::setDMapFilePath("./devices.dmap");
-    }catch(ChimeraTK::runtime_error &){}
-    
+    }catch(ChimeraTK::logic_error &){}
+
     // mexAtExit(CleanUp); // register Cleanup Function
     isInit = true;
   }
