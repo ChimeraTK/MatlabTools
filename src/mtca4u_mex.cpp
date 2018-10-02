@@ -138,7 +138,15 @@ void mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
 
   // Initalize basic stuff
   if (isInit == false) {
-    ChimeraTK::setDMapFilePath("./devices.dmap");
+    // Setting devices.dmap as default is just for convenience. Some scripts
+    // might rely on it.
+    // DeviceAccess from 01.00 is throwing if the file is not there.
+    // We just catch the exception and continue. The user will set his own
+    // dmap file later if needed.
+    try{
+      ChimeraTK::setDMapFilePath("./devices.dmap");
+    }catch(ChimeraTK::runtime_error &){}
+    
     // mexAtExit(CleanUp); // register Cleanup Function
     isInit = true;
   }
