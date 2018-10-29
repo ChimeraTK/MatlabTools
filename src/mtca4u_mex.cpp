@@ -713,15 +713,19 @@ void readDmaRaw(unsigned int nlhs, mxArray *plhs[], unsigned int nrhs, const mxA
   // Notice: signedFlags, bits and fracBits have been removed as they were not/cannot be used anyway
 
   // Now that we have all parameters it's time to read the data from the device.
-  RegisterPath moduleName( mxArrayToStdString(prhs[pp_module]) );
-  RegisterPath registerName( mxArrayToStdString(prhs[pp_register]) );
+  RegisterPath registerPath(mxArrayToStdString(prhs[pp_module]) + "/" +
+                            mxArrayToStdString(prhs[pp_register]));
 
   // we get the register content as a std::vector<double>
-  auto accessor = device->getOneDRegisterAccessor<int32_t>(moduleName/registerName, nWords32Bit, offset, {AccessMode::raw});
+  auto accessor = device->getOneDRegisterAccessor<int32_t>(registerPath, nWords32Bit, offset, {AccessMode::raw});
   accessor.read();
 
-  // now fill it to the matlab output buffer
+  // corrects for nElements == 0;
+  nElements =
+      (mode == 16) ? accessor.getNElements() * 2 : accessor.getNElements();
+  // fill it to the matlab output buffer
   plhs[0] = mxCreateDoubleMatrix(nElements, 1, mxREAL);
+
   double *plhsValue = mxGetPr(plhs[0]);
 
   if (mode == 32){
