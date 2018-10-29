@@ -720,11 +720,11 @@ void readDmaRaw(unsigned int nlhs, mxArray *plhs[], unsigned int nrhs, const mxA
   auto accessor = device->getOneDRegisterAccessor<int32_t>(registerPath, nWords32Bit, offset, {AccessMode::raw});
   accessor.read();
 
-  // corrects for nElements == 0;
-  nElements =
+
+  // frame matlab buffer with appropriate number of elements
+  auto bufferSize = 
       (mode == 16) ? accessor.getNElements() * 2 : accessor.getNElements();
-  // fill it to the matlab output buffer
-  plhs[0] = mxCreateDoubleMatrix(nElements, 1, mxREAL);
+  plhs[0] = mxCreateDoubleMatrix(bufferSize, 1, mxREAL);
 
   double *plhsValue = mxGetPr(plhs[0]);
 
