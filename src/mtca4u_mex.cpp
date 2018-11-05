@@ -736,7 +736,7 @@ void readDmaRaw(unsigned int nlhs, mxArray *plhs[], unsigned int nrhs, const mxA
     }
   }else{
     auto values16Bit = reinterpret_cast<int16_t *>(accessor.data());
-    for (size_t i = 0; i < nElements; ++i){
+    for (size_t i = 0; i < bufferSize; ++i){
        plhsValue[i]=values16Bit[i];
     }
   }
