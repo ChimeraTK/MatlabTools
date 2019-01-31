@@ -64,17 +64,13 @@ std::string getOrdinalNumerString(const unsigned int &n) {
 
 
 string mxArrayToStdString(const mxArray *pa)  { char *ps = mxArrayToString(pa); string s = ps; mxFree(ps); return s; }
-//char* mxArrayToString(const mxArray*) = delete; // do not use this function cause one could forget the mxFree. Use the one above instead!
 
 // Function declaration
 
-//static void CleanUp(void); // Should me declared static (See Matlab MEX Manual)
 boost::shared_ptr<Device> getDevice(const mxArray *plhsDevice);
-//boost::shared_ptr< devMap<devPCIE> > getDevice(const mxArray *plhsDevice);
 
 // Global Parameter
 
-//std::vector<boost::shared_ptr< devMap<devPCIE> > > openDevicesVector;
 bool isInit = false; // Used to initalize stuff at the first run
 std::vector<boost::shared_ptr<Device> > openDevicesVector;
 
@@ -95,11 +91,9 @@ void getInfo(unsigned int, mxArray**, unsigned int, const mxArray **);
 void getDeviceInfo(unsigned int, mxArray**, unsigned int, const mxArray **);
 void getRegisterInfo(unsigned int, mxArray**, unsigned int, const mxArray **);
 void getRegisterSize(unsigned int, mxArray**, unsigned int, const mxArray **);
-//void refreshDmap(unsigned int, mxArray**, unsigned int, const mxArray **);
 void readRegister(unsigned int, mxArray**, unsigned int, const mxArray **);
 void writeRegister(unsigned int, mxArray**, unsigned int, const mxArray **);
 void readDmaRaw(unsigned int, mxArray**, unsigned int, const mxArray **);
-//void readDmaChannel(unsigned int, mxArray**, unsigned int, const mxArray **);
 void readSequence(unsigned int, mxArray**, unsigned int, const mxArray **);
 void setDMapFilePath(unsigned int, mxArray**, unsigned int, const mxArray **);
 void getDMapFilePath(unsigned int, mxArray**, unsigned int, const mxArray **);
@@ -114,11 +108,9 @@ vector<Command> vectorOfCommands = {
   Command("device_info", &getDeviceInfo, "", ""),
   Command("register_info", &getRegisterInfo, "", ""),
   Command("register_size", &getRegisterSize, "", ""),
-  //Command("refresh_dmap", &refreshDmap, "", ""),
   Command("read", &readRegister, "", ""),
   Command("write", &writeRegister, "", ""),
   Command("read_dma_raw", &readDmaRaw, "", ""),
-  //Command("read_dma", &readDmaChannel, "", ""),
   Command("read_seq", &readSequence, "", ""),
   Command("set_dmap", &setDMapFilePath, "", ""),
   Command("get_dmap", &getDMapFilePath, "", "")
@@ -147,7 +139,6 @@ void mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
       ChimeraTK::setDMapFilePath("./devices.dmap");
     }catch(ChimeraTK::logic_error &){}
 
-    // mexAtExit(CleanUp); // register Cleanup Function
     isInit = true;
   }
 
@@ -188,58 +179,6 @@ void mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
     mexErrMsgTxt(e.what());
   }
 }
-
-/**
- * @brief CleanUp
- *
- */
-//static void CleanUp(void)
-//{
-//#ifdef __MEX_DEBUG_MODE
-//  mexPrintf("CleanUp\n");
-//#endif
-//  //mapOfDevices.clear();
-//}
-
-/**
- * @brief getDevice
- *
- * @param[in] dmapFileName File to be loaded or all in the current directory if empty
- *
- */
-/* boost::shared_ptr< devMap<devPCIE> > getDevice(const string& deviceName) //, const string &dmapFileName = "")
-{
-  if (g_dmapFilesParser.getdMapFileSize() == 0) {
-    g_dmapFilesParser.parse_dir(".");
-  }
-  // Return already open device
-  if ( !openDevicesMap[deviceName] ){
-
-    // Look for device
-    dmapFilesParser::iterator it = g_dmapFilesParser.begin();
-    for (; it != g_dmapFilesParser.end(); ++it)
-    {
-      if (deviceName == it->first.dev_name)
-        break;
-    }
-
-    if(it == g_dmapFilesParser.end())
-      mexErrMsgTxt("Unknown device '" + deviceName + "'.");
-
-	//open the devPCIE
-    boost::shared_ptr<devPCIE> pdev( new devPCIE );
-    pdev->openDev(it->first.dev_file, O_RDWR, NULL);
-
-	//open the mapFile
-    openDevicesMap[deviceName].reset( new devMap< devPCIE > );
-    openDevicesMap[deviceName]->openDev( pdev, it->second ); //never thows
-
-//#ifdef __MEX_DEBUG_MODE
-    mexPrintf("Successfully opened "+ deviceName + " at " + it->first.dev_file + "\n");
-//#endif
-  }
-  return openDevicesMap[deviceName];
-} */
 
 void getDMapFilePath(unsigned int, mxArray *plhs[], unsigned int, const mxArray **)
 {
@@ -352,19 +291,6 @@ void closeDevice(unsigned int, mxArray **, unsigned int nrhs, const mxArray *prh
 }
 
 /**
- * @brief refreshDmap
- *
- * Parameter: dmap
- */
-/*void refreshDmap(unsigned int, mxArray **, unsigned int nrhs, const mxArray **)
-{
-  if (nrhs > 0) mexWarnMsgTxt("To many input arguments.");
-
-  //g_lastDmapFile = mxArrayToStdString(prhs[0]);
-  g_dmapFilesParser.parse_dir(".");
-} */
-
-/**
  * @brief getInfo
  *
  */
@@ -381,7 +307,6 @@ void getInfo(unsigned int nlhs, mxArray *plhs[], unsigned int nrhs, const mxArra
 
   unsigned int i = 0;
 
-  //for (dmapFilesParser::iterator it = parser.begin(); it != parser.end(); ++it, ++i)
   for (DMapFilesParser::iterator it = parser.begin(); it != parser.end(); ++it, ++i)
   {
     mxArray *firmware_value = mxCreateDoubleMatrix(1,1,mxREAL);
@@ -429,7 +354,6 @@ void getDeviceInfo(unsigned int nlhs, mxArray ** plhs, unsigned int nrhs, const 
   if(nrhs > 1) mexWarnMsgTxt("Too many input arguments.");
   if(nlhs > 1) mexErrMsgTxt("Too many output arguments.");
 
-  //boost::shared_ptr< devMap<devPCIE> > device = getDevice(prhs[0]);
   boost::shared_ptr<Device> device = getDevice(prhs[0]);
 
   auto & registerCatalogue = device->getRegisterCatalogue();
@@ -536,7 +460,6 @@ void getRegisterSize(unsigned int nlhs, mxArray *plhs[], unsigned int nrhs, cons
   if(nrhs > 3) mexWarnMsgTxt("Too many input arguments.");
   if(nlhs > 1) mexErrMsgTxt("Too many output arguments.");
 
-  //boost::shared_ptr< devMap<devPCIE> > device = getDevice(prhs[0]);
   boost::shared_ptr<Device> device = getDevice(prhs[0]);
 
   if (!mxIsChar(prhs[1])) mexErrMsgTxt("Invalid " +  getOrdinalNumerString(1) + " input argument.");
@@ -563,7 +486,6 @@ void readRegister(unsigned int nlhs, mxArray *plhs[], unsigned int nrhs, const m
   if (nrhs > 5) mexWarnMsgTxt("To many input arguments.");
   if (nlhs > 1) mexErrMsgTxt("To many output arguments.");
 
-  //boost::shared_ptr< devMap<devPCIE> > device = getDevice(prhs[pp_device]);
   boost::shared_ptr<Device> device = getDevice(prhs[pp_device]);
 
   if (!mxIsChar(prhs[pp_module])) mexErrMsgTxt("Invalid " + getOrdinalNumerString(pp_module) + " input argument.");
@@ -604,7 +526,6 @@ void writeRegister(unsigned int, mxArray **, unsigned int nrhs, const mxArray *p
   if (nrhs < 4) mexErrMsgTxt("Not enough input arguments.");
   if (nrhs > 5) mexWarnMsgTxt("To many input arguments.");
 
-  //boost::shared_ptr< devMap<devPCIE> > device = getDevice(prhs[pp_device]);
   boost::shared_ptr<Device> device = getDevice(prhs[pp_device]);
 
   if (!mxIsChar(prhs[pp_module]))  mexErrMsgTxt("Invalid " + getOrdinalNumerString(pp_module) + " input argument.");
@@ -652,7 +573,6 @@ void writeRegister(unsigned int, mxArray **, unsigned int nrhs, const mxArray *p
  * @brief readRawDmaData
  *
  */
-//template<class T> void innerRawDMARead(const boost::shared_ptr<devMap<devPCIE>::RegisterAccessor> &reg, double* dest, const size_t nElements, const size_t nOffset, const FixedPointConverter &conv)
 template<class T> void innerRawDMARead(const boost::shared_ptr<Device::RegisterAccessor> &reg, double* dest, const size_t nElements, const size_t nOffset, const FixedPointConverter &conv)
 {
   std::vector<T> dmaValue(nElements);
@@ -677,7 +597,6 @@ void readDmaRaw(unsigned int nlhs, mxArray *plhs[], unsigned int nrhs, const mxA
   if (nrhs > 9) mexWarnMsgTxt("Too many input arguments.");
   if (nlhs > 1) mexErrMsgTxt("Too many output arguments.");
 
-  //boost::shared_ptr< devMap<devPCIE> > device = getDevice(prhs[pp_device]);
   boost::shared_ptr<Device> device = getDevice(prhs[pp_device]);
 
   if (!mxIsChar(prhs[pp_module])) mexErrMsgTxt("Invalid " + getOrdinalNumerString(pp_module) + " input argument."); 
@@ -757,7 +676,6 @@ void readSequence(unsigned int nlhs, mxArray *plhs[], unsigned int nrhs, const m
   /*if (mxGetScalar(prhs[pp_channel]) == 0)
     mexErrMsgTxt("channel index cannot be 0.");*/
 
-  //boost::shared_ptr< devMap<devPCIE> > device = getDevice(prhs[pp_device]);
   boost::shared_ptr<Device> device = getDevice(prhs[pp_device]);
 
   if (!mxIsChar(prhs[pp_module])) mexErrMsgTxt("Invalid " + getOrdinalNumerString(pp_module) + " input argument.");
