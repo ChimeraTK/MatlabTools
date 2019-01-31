@@ -279,6 +279,12 @@ void closeDevice(unsigned int, mxArray **, unsigned int nrhs, const mxArray *prh
   if (deviceHandle >= openDevicesVector.size())
     mexErrMsgTxt("Invalid device handle.");
 
+  // The backend factory will keep a copy, so a rebot backend for instance will keep
+  // the device occupied if we just reset the device object. So we have to really close it.
+  if (openDevicesVector[deviceHandle]){ // check if device has been closed/deleted already (avoid accessing nullptr)
+    openDevicesVector[deviceHandle]->close();
+  }
+  // Remove the device object. Re-opening will recreate it.
   openDevicesVector[deviceHandle].reset();
 
   #ifdef __MEX_DEBUG_MODE
