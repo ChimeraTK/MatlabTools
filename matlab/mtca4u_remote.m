@@ -35,9 +35,9 @@ classdef mtca4u_remote < mtca4u_interface
 		board = [];
         channel = 0;
         c;
-        required_tools_version = '00.13';
+        required_tools_version = '00.14';
         %remote_executable = strcat('mtca4u-', self.required_tools_version);
-        remote_executable = 'mtca4u-00.13';
+        remote_executable = 'mtca4u-00.14';
     end
     
     methods (Access = 'private')
