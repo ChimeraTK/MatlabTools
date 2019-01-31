@@ -22,16 +22,12 @@
 #include <ChimeraTK/BackendFactory.h>
 #include <ChimeraTK/DMapFilesParser.h>
 #include <ChimeraTK/Device.h>
-#include <ChimeraTK/MultiplexedDataAccessor.h>
 #include <ChimeraTK/RegisterPath.h>
 
 #include "../include/version.h"
 
 using namespace ChimeraTK;
 using namespace std;
-
-typedef MultiplexedDataAccessor<double> dma_accessor;
-typedef boost::shared_ptr<MultiplexedDataAccessor<double>> dma_Accessor_ptr;
 
 template <typename UserType>
 void writeToDevice(boost::shared_ptr<Device> &device,
@@ -567,20 +563,6 @@ void writeRegister(unsigned int, mxArray **, unsigned int nrhs, const mxArray *p
   } else {
     mexErrMsgTxt("Data type unsupported.");
   }
-}
-
-/**
- * @brief readRawDmaData
- *
- */
-template<class T> void innerRawDMARead(const boost::shared_ptr<Device::RegisterAccessor> &reg, double* dest, const size_t nElements, const size_t nOffset, const FixedPointConverter &conv)
-{
-  std::vector<T> dmaValue(nElements);
-  reg->readDMA(reinterpret_cast<int32_t*>(&dmaValue[0]), nElements*sizeof(T), nOffset);
-
-  // copy and transform data
-  for(unsigned int i = 0; i < nElements; i++)
-    dest[i] = conv.toDouble(dmaValue[i]);
 }
 
 /**
