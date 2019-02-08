@@ -76,3 +76,5 @@ ADD_TEST(NAME remote_write COMMAND "mleval" "run init_remote; run test_write.m" 
 file(COPY example DESTINATION ${PROJECT_BINARY_DIR})
 configure_file(test/print_all_devices_reference.in ${PROJECT_BINARY_DIR}/example/print_all_devices_reference)
 ADD_TEST(NAME example COMMAND "mleval" "run ${PROJECT_BINARY_DIR}/example/example.m" "-s" WORKING_DIRECTORY ${PROJECT_BINARY_DIR}/example)
+
+include(cmake/enable_code_coverage_report.cmake)
