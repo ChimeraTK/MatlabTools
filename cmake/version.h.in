@@ -1,0 +1,6 @@
+#ifndef DEVICEACCESS_MATLAB_VERSION_H
+#define DEVICEACCESS_MATLAB_VERSION_H
+
+const std::string gVersion("@DeviceAccess_Matlab_VERSION@");
+
+#endif //DEVICEACCESS_MATLAB_VERSION_H
