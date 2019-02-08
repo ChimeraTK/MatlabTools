@@ -34,7 +34,8 @@ int main(int argc, const char *argv[])
 
   /* Add path */
 
-  engEvalString(ep, "addpath('../bin/');");
+  engEvalString(ep, "addpath('../bin/');"); // FIXME: remove this, it's for the old makefiles
+  engEvalString(ep, "addpath('../');");
   engEvalString(ep, "addpath('../matlab/');");
   engEvalString(ep, "addpath('./matlab/');");
 
