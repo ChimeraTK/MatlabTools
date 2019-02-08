@@ -44,3 +44,13 @@ foreach(testExecutable mleval mlcallmex)
   add_executable(${testExecutable} test/src/${testExecutable}.cpp)
   target_link_libraries(${testExecutable} ${Matlab_MX_LIBRARY} ${Matlab_ENG_LIBRARY} ${CMAKE_DL_LIBS} mtca4u_mex)
 endforeach()
+
+# prepare the tests that need version/user/directory dependent info
+foreach(testFile test_version.m init_remote.m test_remote_init.m)
+  configure_file(test/${testFile}.in  ${PROJECT_BINARY_DIR}/test/${testFile})
+endforeach()
+
+# the .m files in test (incl. subdir matlab, excluding src subdir)
+file(COPY test DESTINATION ${PROJECT_BINARY_DIR} FILES_MATCHING PATTERN *.m PATTERN src EXCLUDE)
+
+ADD_TEST(NAME mex COMMAND "mleval" "run test_mex.m" "-s" WORKING_DIRECTORY ${PROJECT_BINARY_DIR}/test)
