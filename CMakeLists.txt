@@ -46,6 +46,8 @@ foreach(testExecutable mleval mlcallmex)
 endforeach()
 
 # prepare the tests that need version/user/directory dependent info
+set(USER $ENV{USER})
+set(HOME $ENV{HOME})
 foreach(testFile test_version.m init_remote.m test_remote_init.m)
   configure_file(test/${testFile}.in  ${PROJECT_BINARY_DIR}/test/${testFile})
 endforeach()
