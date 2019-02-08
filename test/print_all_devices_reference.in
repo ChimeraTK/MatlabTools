@@ -1,0 +1,2 @@
+Name: DUMMY3	 Device: sdm://./pci:mtcadummys3	 Firmware: 0	 Date: 	 Map: @PROJECT_BINARY_DIR@/example/./mtcadummy.mapp
+Name: DUMMY2	 Device: sdm://./pci:mtcadummys1	 Firmware: 0	 Date: 	 Map: @PROJECT_BINARY_DIR@/example/./sequences.map
