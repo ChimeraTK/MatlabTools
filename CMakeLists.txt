@@ -40,8 +40,11 @@ enable_testing()
 
 include_directories(${Matlab_INCLUDE_DIRS})
 
+configure_file(test/src/mleval.cpp.in "${PROJECT_BINARY_DIR}/src/mleval.cpp" @ONLY)
+add_executable(mleval ${PROJECT_BINARY_DIR}/src/mleval.cpp)
+add_executable(mlcallmex test/src/mlcallmex.cpp)
+
 foreach(testExecutable mleval mlcallmex)
-  add_executable(${testExecutable} test/src/${testExecutable}.cpp)
   target_link_libraries(${testExecutable} ${Matlab_MX_LIBRARY} ${Matlab_ENG_LIBRARY} ${CMAKE_DL_LIBS} mtca4u_mex)
 endforeach()
 

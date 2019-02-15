@@ -19,8 +19,7 @@ int main(int argc, const char *argv[])
   char buff[BUFSIZE+1];
   memset (buff,0,BUFSIZE+1); // MATLAB will not NULL-Terminate the string!
 
-  /* matlab must be in the PATH! */
-  if (!(ep = engOpen("matlab -nodisplay"))) {
+  if (!(ep = engOpen("@Matlab_ROOT_DIR@/bin/matlab -nodisplay"))) {
     fprintf(stderr, "Can't start MATLAB engine\n");
     return -1;
   }
