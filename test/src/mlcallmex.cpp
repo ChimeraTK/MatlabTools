@@ -1,12 +1,13 @@
-/* http://stackoverflow.com/questions/11220250/how-do-i-profile-a-mex-function-in-matlab */
+/* http://stackoverflow.com/questions/11220250/how-do-i-profile-a-mex-function-in-matlab
+ */
 
-#include <stdlib.h>
 #include <stdio.h>
+#include <stdlib.h>
 #include <string>
 
-#include <string.h>
-#include <errno.h>
 #include <dlfcn.h>
+#include <errno.h>
+#include <string.h>
 
 #include "engine.h"
 
@@ -16,10 +17,10 @@
 //#include <unistd.h>
 //#include <ucontext.h>
 
-typedef void (*mexFunction_t)(int nargout, mxArray *pargout [ ], int nargin, const mxArray *pargin[]);
+typedef void (*mexFunction_t)(int nargout, mxArray *pargout[], int nargin,
+                              const mxArray *pargin[]);
 
-int main(int argc, const char *argv[])
-{
+int main(int argc, const char *argv[]) {
   Engine *ep;
   char buff[1024];
   unsigned int iteration = 1;
@@ -32,8 +33,9 @@ int main(int argc, const char *argv[])
   engOutputBuffer(ep, buff, 1023);
 
   /* load the mex file */
-  if (argc<2) {
-    fprintf(stderr, "Error. Give full path to the MEX file as input parameter.\n");
+  if (argc < 2) {
+    fprintf(stderr,
+            "Error. Give full path to the MEX file as input parameter.\n");
     return -1;
   }
 
@@ -57,9 +59,8 @@ int main(int argc, const char *argv[])
   if (argc >= 3) {
     try {
       iteration = std::stoul(argv[2]);
-    }
-    catch(...) {
-    //catch (const std::invalid_argument& ia) {
+    } catch (...) {
+      // catch (const std::invalid_argument& ia) {
       fprintf(stderr, "Exception\n");
       return -1;
     }
@@ -68,7 +69,8 @@ int main(int argc, const char *argv[])
   /* load input data - for convenience do that using MATLAB engine */
   /* NOTE: parameters are MEX-file specific, so one has to modify this*/
   /* to fit particular needs */
-  engEvalString(ep, "cmd = 'read'; dev = 'SISL10'; reg = 'BOARD_WORD_FIRMWARE'");
+  engEvalString(ep,
+                "cmd = 'read'; dev = 'SISL10'; reg = 'BOARD_WORD_FIRMWARE'");
   mxArray *arg1 = engGetVariable(ep, "cmd");
   mxArray *arg2 = engGetVariable(ep, "dev");
   mxArray *arg3 = engGetVariable(ep, "reg");
