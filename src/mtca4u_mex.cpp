@@ -115,6 +115,7 @@ void readDmaRaw(unsigned int, mxArray**, unsigned int, const mxArray**);
 void readSequence(unsigned int, mxArray**, unsigned int, const mxArray**);
 void setDMapFilePath(unsigned int, mxArray**, unsigned int, const mxArray**);
 void getDMapFilePath(unsigned int, mxArray**, unsigned int, const mxArray**);
+void readRaw(unsigned int, mxArray**, unsigned int, const mxArray**);
 
 vector<Command> vectorOfCommands = {Command("help", &PrintHelp, "", ""), Command("version", &getVersion, "", ""),
     Command("nop", NULL, "", ""), Command("open", &openDevice, "", ""), Command("close", &closeDevice, "", ""),
@@ -122,7 +123,8 @@ vector<Command> vectorOfCommands = {Command("help", &PrintHelp, "", ""), Command
     Command("register_info", &getRegisterInfo, "", ""), Command("register_size", &getRegisterSize, "", ""),
     Command("read", &readRegister, "", ""), Command("write", &writeRegister, "", ""),
     Command("read_dma_raw", &readDmaRaw, "", ""), Command("read_seq", &readSequence, "", ""),
-    Command("set_dmap", &setDMapFilePath, "", ""), Command("get_dmap", &getDMapFilePath, "", "")};
+    Command("set_dmap", &setDMapFilePath, "", ""), Command("get_dmap", &getDMapFilePath, "", ""),
+    Command("read_raw", &readRaw, "", "")};
 
 /**
  * @brief Mex Entry Function
@@ -310,7 +312,7 @@ void getInfo(unsigned int nlhs, mxArray* plhs[], unsigned int nrhs, const mxArra
 
   DMapFilesParser parser(".");
 
-  mwSize dims[2] = {1, (int)parser.getdMapFileSize()};
+  mwSize dims[2] = {1, parser.getdMapFileSize()};
   const char* field_names[] = {"name", "device", "firmware", "date", "map"};
   plhs[0] = mxCreateStructArray(2, dims, (sizeof(field_names) / sizeof(*field_names)), field_names);
 
@@ -758,6 +760,43 @@ void readSequence(unsigned int nlhs, mxArray* plhs[], unsigned int nrhs, const m
       }
     }
   }
+}
+
+void readRaw(unsigned int nlhs, mxArray* plhs[], unsigned int nrhs, const mxArray* prhs[]) {
+  static const unsigned int pp_device = 0, pp_module = 1, pp_register = 2, pp_offset = 3, pp_elements = 4;
+
+  if(nrhs < 3) mexErrMsgTxt("Not enough input arguments.");
+  if(nrhs > 5) mexWarnMsgTxt("Too many input arguments.");
+  if(nlhs > 1) mexErrMsgTxt("Too many output arguments.");
+
+  auto device = getDevice(prhs[pp_device]);
+
+  if(!mxIsChar(prhs[pp_module])) mexErrMsgTxt("Invalid " + getOrdinalNumerString(pp_module) + " input argument.");
+  if(!mxIsChar(prhs[pp_register])) mexErrMsgTxt("Invalid " + getOrdinalNumerString(pp_register) + " input argument.");
+
+  if((nrhs > pp_offset) && !mxIsRealScalar(prhs[pp_offset])){
+    mexErrMsgTxt("Invalid " + getOrdinalNumerString(pp_offset) + " input argument.");
+  }
+  if((nrhs > pp_elements) && !mxIsPositiveRealScalar(prhs[pp_elements])){
+    mexErrMsgTxt("Invalid " + getOrdinalNumerString(pp_elements) + " input argument.");
+  }
+
+  // offset, nElements is optional. Use 0 if not set; nElements = 0 =>
+  // read all elements.
+  const uint32_t offset = (nrhs > pp_offset) ? mxGetScalar(prhs[pp_offset]) : 0;
+  const uint32_t nElements = (nrhs > pp_elements) ? mxGetScalar(prhs[pp_elements]) : 0;
+
+  RegisterPath registerPath(mxArrayToStdString(prhs[pp_module]) + "/" + mxArrayToStdString(prhs[pp_register]));
+  auto accessor = device->getOneDRegisterAccessor<int32_t>(registerPath, nElements, offset, {AccessMode::raw});
+  accessor.read();
+
+  // frame matlab buffer with appropriate number of elements
+  plhs[0] = mxCreateDoubleMatrix(1, accessor.getNElements(), mxREAL);
+  double* plhsValue = mxGetPr(plhs[0]);
+
+  size_t i = 0;
+  for(auto value : accessor) { plhsValue[i++] = value; }
+
 }
 
 template<typename UserType>

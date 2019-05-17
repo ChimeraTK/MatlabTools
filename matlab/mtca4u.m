@@ -226,6 +226,36 @@ classdef mtca4u < mtca4u_interface
             end
         end
 
+
+        function varargout = read_raw(obj, varargin)
+        %mtca4u.read_raw - Reads data from a board in the raw format; raw format
+        %                  for a register generally means no fixed point conversion.
+        %
+        % Syntax:
+        %    % board = mtca4u('board'); 
+        %    [data] = board.read_raw(module, register)
+        %    [data] = board.read_raw(module, register, offset)
+        %    [data] = board.read_raw(module, register, offset, elements)
+        %    ...
+        %
+        % Inputs:
+        %    module - Name of the module
+        %    register - Name of the register
+        %    offset - Start element of the writing (optional, default: 1)
+        %    elements - Number of elements to be read (optional, default: 'numel(offset:end)')
+        %
+        % Outputs:
+        %    data - raw value/s from the register without fixedpoint conversion.
+        %
+        % See also: mtca4u, mtca4u.read, mtca4u.write
+            try
+                [varargout{1:nargout}] = mtca4u_mex('read_raw', obj.handle, varargin{:});
+            catch ex
+                error(ex.message);
+            end
+        end
+
+
         function write(obj, varargin)
         %mtca4u.write - Writes data to the register of a board
         %
@@ -276,8 +306,9 @@ classdef mtca4u < mtca4u_interface
         % Outputs:
         %    data - Value/s of the DAQ Block
         %
-        % See also: mtca4u, mtcau4.read
+        % See also: mtca4u, mtca4u.read, mtca4u.read_raw
           try
+	    warning('Deprecated function. Consider using read, read_raw');
             [varargout{1:nargout}] = mtca4u_mex('read_dma_raw', obj.handle, varargin{:});
           catch ex
             error(ex.message);
