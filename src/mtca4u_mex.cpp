@@ -791,8 +791,8 @@ void readRaw(unsigned int nlhs, mxArray* plhs[], unsigned int nrhs, const mxArra
   accessor.read();
 
   // frame matlab buffer with appropriate number of elements
-  plhs[0] = mxCreateDoubleMatrix(1, accessor.getNElements(), mxREAL);
-  double* plhsValue = mxGetPr(plhs[0]);
+  plhs[0] = mxCreateUninitNumericMatrix(1, accessor.getNElements(), mxINT32_CLASS, mxREAL);
+  int32_t* plhsValue = (int32_t*) mxGetData(plhs[0]);
 
   size_t i = 0;
   for(auto value : accessor) { plhsValue[i++] = value; }
