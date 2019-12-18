@@ -1,9 +1,9 @@
 cmake_minimum_required(VERSION 2.8)
 project(DeviceAccess_Matlab)
 
-set(${PROJECT_NAME}_MAJOR_VERSION 00)
-set(${PROJECT_NAME}_MINOR_VERSION 04)
-set(${PROJECT_NAME}_PATCH_VERSION 17)
+set(${PROJECT_NAME}_MAJOR_VERSION 01)
+set(${PROJECT_NAME}_MINOR_VERSION 00)
+set(${PROJECT_NAME}_PATCH_VERSION 00)
 
 # Set additional version-specific variables
 include(${CMAKE_SOURCE_DIR}/cmake/set_version_numbers.cmake)
