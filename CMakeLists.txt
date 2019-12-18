@@ -8,6 +8,10 @@ set(${PROJECT_NAME}_PATCH_VERSION 00)
 # Set additional version-specific variables
 include(${CMAKE_SOURCE_DIR}/cmake/set_version_numbers.cmake)
 
+if(Matlab_ROOT_DIR)
+  set(ENV{PATH} $ENV{PATH}:${Matlab_ROOT_DIR}/bin)
+endif()
+
 find_package(Matlab COMPONENTS MX_LIBRARY ENG_LIBRARY REQUIRED)
 
 include(cmake/add_dependency.cmake)
