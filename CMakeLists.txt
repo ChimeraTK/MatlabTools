@@ -84,4 +84,8 @@ file(COPY example DESTINATION ${PROJECT_BINARY_DIR})
 configure_file(test/print_all_devices_reference.in ${PROJECT_BINARY_DIR}/example/print_all_devices_reference)
 ADD_TEST(NAME example COMMAND "mleval" "run ${PROJECT_BINARY_DIR}/example/example.m" "-s" WORKING_DIRECTORY ${PROJECT_BINARY_DIR}/example)
 
+# Set LD_PRELOAD for all tests so the original libstdc++ of the Linux system is used (instead of the version shipped with Matlab)
+set_property(TEST mex local_init local_open_close local_version local_read local_write remote_init remote_read remote_write example
+             PROPERTY ENVIRONMENT LD_PRELOAD=/usr/lib/x86_64-linux-gnu/libstdc++.so.6)
+
 include(cmake/enable_code_coverage_report.cmake)
