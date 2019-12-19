@@ -12,6 +12,10 @@ if(Matlab_ROOT_DIR)
   set(ENV{PATH} $ENV{PATH}:${Matlab_ROOT_DIR}/bin)
 endif()
 
+include(FindPackageHandleStandardArgs)
+set(CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}/cmake/Modules;${CMAKE_MODULE_PATH}")
+
+
 find_package(Matlab COMPONENTS MX_LIBRARY ENG_LIBRARY REQUIRED)
 
 include(cmake/add_dependency.cmake)
