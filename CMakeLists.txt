@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 2.8)
+cmake_minimum_required(VERSION 3.5)
 project(DeviceAccess_Matlab)
 
 set(${PROJECT_NAME}_MAJOR_VERSION 01)
@@ -12,9 +12,11 @@ if(Matlab_ROOT_DIR)
   set(ENV{PATH} $ENV{PATH}:${Matlab_ROOT_DIR}/bin)
 endif()
 
-include(FindPackageHandleStandardArgs)
+#Add the local modules directory first in the path. It contains a FindMatlab version
+#from CMake 3.15 which solves linkage problems with Matlab versions >= 2018a. Like this
+#we can use it already with CMake 3.5. Once we don't use Linuxes with old CMake versions
+#any more, the local FindMatlab and this line can be removed.
 set(CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}/cmake/Modules;${CMAKE_MODULE_PATH}")
-
 
 find_package(Matlab COMPONENTS MX_LIBRARY ENG_LIBRARY REQUIRED)
 

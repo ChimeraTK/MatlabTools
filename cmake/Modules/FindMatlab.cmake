@@ -1,3 +1,11 @@
+# This FindMatlab script was taken from CMake 3.15 and modified to
+# work also for CMake 3.5 and Matlab 2019a and 2019b
+# It was done to compile the Matlab bindings for Matlab 2019b on
+# Ubuntu16.04, which comes with CMake 3.5.
+# Once we are on a recent enough Linux/CMake version this file can be
+# removed again.
+
+# Only this file:
 # Distributed under the OSI-approved BSD 3-Clause License.  See accompanying
 # file Copyright.txt or https://cmake.org/licensing for details.
 
