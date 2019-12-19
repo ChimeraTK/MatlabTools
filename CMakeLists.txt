@@ -1,12 +1,16 @@
 cmake_minimum_required(VERSION 2.8)
 project(DeviceAccess_Matlab)
 
-set(${PROJECT_NAME}_MAJOR_VERSION 00)
-set(${PROJECT_NAME}_MINOR_VERSION 05)
+set(${PROJECT_NAME}_MAJOR_VERSION 01)
+set(${PROJECT_NAME}_MINOR_VERSION 00)
 set(${PROJECT_NAME}_PATCH_VERSION 00)
 
 # Set additional version-specific variables
 include(${CMAKE_SOURCE_DIR}/cmake/set_version_numbers.cmake)
+
+if(Matlab_ROOT_DIR)
+  set(ENV{PATH} $ENV{PATH}:${Matlab_ROOT_DIR}/bin)
+endif()
 
 find_package(Matlab COMPONENTS MX_LIBRARY ENG_LIBRARY REQUIRED)
 
@@ -79,5 +83,12 @@ ADD_TEST(NAME remote_write COMMAND "mleval" "run init_remote; run test_write.m" 
 file(COPY example DESTINATION ${PROJECT_BINARY_DIR})
 configure_file(test/print_all_devices_reference.in ${PROJECT_BINARY_DIR}/example/print_all_devices_reference)
 ADD_TEST(NAME example COMMAND "mleval" "run ${PROJECT_BINARY_DIR}/example/example.m" "-s" WORKING_DIRECTORY ${PROJECT_BINARY_DIR}/example)
+
+# Set LD_PRELOAD for all tests so the original libstdc++ of the Linux system is used (instead of the version shipped with Matlab)
+# This is done only for Matlab R2016b and earlier. For R2019 this must not be done.
+if(NOT ${Matlab_VERSION_STRING_INTERNAL} VERSION_GREATER 9.1)
+  set_property(TEST mex local_init local_open_close local_version local_read local_write remote_init remote_read remote_write example
+               PROPERTY ENVIRONMENT LD_PRELOAD=/usr/lib/x86_64-linux-gnu/libstdc++.so.6)
+endif()
 
 include(cmake/enable_code_coverage_report.cmake)
