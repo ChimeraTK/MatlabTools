@@ -189,10 +189,10 @@ void mexFunction(int nlhs, mxArray* plhs[], int nrhs, const mxArray* prhs[]) {
       it->pCallback(nlhs, plhs, nrhs - 1, &prhs[1]);
   }
 
-  catch(runtime_error& e) {
+  catch(ChimeraTK::runtime_error& e) {
     mexErrMsgTxt(e.what());
   }
-  catch(logic_error& e) {
+  catch(ChimeraTK::logic_error& e) {
     mexErrMsgTxt(e.what());
   }
 }
