@@ -189,7 +189,10 @@ void mexFunction(int nlhs, mxArray* plhs[], int nrhs, const mxArray* prhs[]) {
       it->pCallback(nlhs, plhs, nrhs - 1, &prhs[1]);
   }
 
-  catch(Exception& e) {
+  catch(runtime_error& e) {
+    mexErrMsgTxt(e.what());
+  }
+  catch(logic_error& e) {
     mexErrMsgTxt(e.what());
   }
 }
