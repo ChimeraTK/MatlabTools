@@ -17,6 +17,7 @@
 %   Print all devices in map file 
 delete('print_all_devices.txt'); 
 diary('print_all_devices.txt');
+mtca4u.setDMapFilePath('dummies.dmap')
 mtca4u.print_info();
 diary off;
 [status,cmdout] = system('diff print_all_devices.txt print_all_devices_reference');
