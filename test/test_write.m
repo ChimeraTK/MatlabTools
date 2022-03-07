@@ -120,8 +120,8 @@ clear value readback register_size
 value = 1:1024;
 offset = 1000;
 m.write('','AREA_DMAABLE', value);
-readback = m.read('','AREA_DMAABLE',offset);
 register_size = m.get_register_size('','AREA_DMAABLE');
+readback = m.read('','AREA_DMAABLE',offset, register_size - offset);
 
 assert(numel(readback) == (register_size-offset), 'Wrong number of elements read back');
 assert(sum(readback ~= value(offset+1:end)) == 0, 'Wrong array read back');

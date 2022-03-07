@@ -34,12 +34,13 @@ m.write('', 'WORD_ADC_ENA',1); % Fill AREA_DMAABLE with n^2
 ref = (0:1:24).^2;
 
 offset = 5;
-readback = m.read('', 'AREA_DMAABLE', offset);
+register_size = m.get_register_size('','AREA_DMAABLE');
+readback = m.read('', 'AREA_DMAABLE', offset, register_size -  offset);
 assert(isequal(readback(1:numel(ref)-offset), ref(offset+1:end)), 'Wrong array read back');
 clear readback offset
 
 offset = 5;
-readback = m.read_raw('', 'AREA_DMAABLE', offset);
+readback = m.read_raw('', 'AREA_DMAABLE', offset, register_size -  offset);
 disp(readback)
 disp(ref(offset+1:end))
 assert(isequal(readback(1:numel(ref)-offset), ref(offset+1:end)), 'Wrong array read back');
