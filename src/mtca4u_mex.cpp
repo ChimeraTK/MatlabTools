@@ -21,6 +21,7 @@
 #include <ChimeraTK/Device.h>
 #include <ChimeraTK/RegisterPath.h>
 #include <ChimeraTK/Utilities.h>
+#include <ChimeraTK/DMapFileParser.h>
 #include <mex.h>
 
 #include "../include/version.h"
@@ -311,46 +312,45 @@ void closeDevice(unsigned int, mxArray**, unsigned int nrhs, const mxArray* prhs
 void getInfo(unsigned int nlhs, mxArray* plhs[], unsigned int nrhs, const mxArray**) {
   if(nrhs > 0) mexWarnMsgTxt("Too many input arguments.");
   if(nlhs > 1) mexErrMsgTxt("Too many output arguments.");
+  if(ChimeraTK::getDMapFilePath().empty()) {
+    mexErrMsgTxt("DMapFilePath not set. Use mtca4u.setDMapFilePath to configure it.");
+  }
 
-  //  DMapFilesParser parser(".");
+  ChimeraTK::DMapFileParser dMapFileParser;
+  auto dMap = dMapFileParser.parse(ChimeraTK::getDMapFilePath());
 
-  mwSize dims[2] = {1, 1}; //parser.getdMapFileSize()};
+  mwSize dims[2] = {1, dMap->getSize()};
   const char* field_names[] = {"name", "device", "firmware", "date", "map"};
   plhs[0] = mxCreateStructArray(2, dims, (sizeof(field_names) / sizeof(*field_names)), field_names);
 
   unsigned int i = 0;
 
-  //  for(DMapFilesParser::iterator it = parser.begin(); it != parser.end(); ++it, ++i) {
-  //    mxArray* firmware_value = mxCreateDoubleMatrix(1, 1, mxREAL);
-  //    *mxGetPr(firmware_value) = 0;
+  for(auto deviceInfo = dMap->begin(); deviceInfo != dMap->end(); ++deviceInfo, ++i) {
+    mxArray* firmware_value = mxCreateDoubleMatrix(1, 1, mxREAL);
+    *mxGetPr(firmware_value) = 0;
 
-  //    std::string date;
+    std::string date;
 
-  //    try {
-  //      ChimeraTK::setDMapFilePath(it->first.dmapFileName);
-  //      Device tempDevice;
-  //      tempDevice.open(it->first.deviceName);
+    try {
+      ChimeraTK::setDMapFilePath(deviceInfo->dmapFileName);
+      Device tempDevice;
+      tempDevice.open(deviceInfo->deviceName);
 
-  //      int firmware = tempDevice.read<int>("BOARD0/WORD_FIRMWARE");
-  //      *mxGetPr(firmware_value) = firmware;
+      int firmware = tempDevice.read<int>("BOARD0/WORD_FIRMWARE");
+      *mxGetPr(firmware_value) = firmware;
 
-  //      int timestamp = tempDevice.read<int>("BOARD0/WORD_TIMESTAMP");
-  //      date = timestamp;
-  //    }
-  //    catch(...) {
-  //    }
+      int timestamp = tempDevice.read<int>("BOARD0/WORD_TIMESTAMP");
+      date = timestamp;
+    }
+    catch(...) {
+    }
 
-  //    //    mxSetFieldByNumber(plhs[0], i, 0, mxCreateString(it->first.deviceName.c_str()));
-  //    //    mxSetFieldByNumber(plhs[0], i, 1, mxCreateString(it->first.uri.c_str()));
-  //    //    mxSetFieldByNumber(plhs[0], i, 2, firmware_value);
-  //    //    mxSetFieldByNumber(plhs[0], i, 3, mxCreateString(date.c_str()));
-  //    //    mxSetFieldByNumber(plhs[0], i, 4, mxCreateString(it->first.mapFileName.c_str()));
-  //    mxSetFieldByNumber(plhs[0], i, 0, mxCreateString("FIXME"));
-  //    mxSetFieldByNumber(plhs[0], i, 1, mxCreateString("FIXME"));
-  //    mxSetFieldByNumber(plhs[0], i, 2, firmware_value);
-  //    mxSetFieldByNumber(plhs[0], i, 3, mxCreateString(date.c_str()));
-  //    mxSetFieldByNumber(plhs[0], i, 4, mxCreateString("FIXME"));
-  //  }
+    mxSetFieldByNumber(plhs[0], i, 0, mxCreateString(deviceInfo->deviceName.c_str()));
+    mxSetFieldByNumber(plhs[0], i, 1, mxCreateString(deviceInfo->uri.c_str()));
+    mxSetFieldByNumber(plhs[0], i, 2, firmware_value);
+    mxSetFieldByNumber(plhs[0], i, 3, mxCreateString(date.c_str()));
+    mxSetFieldByNumber(plhs[0], i, 4, mxCreateString(deviceInfo->mapFileName.c_str()));
+  }
 }
 
 std::string getFundamentalTypeString(ChimeraTK::DataDescriptor::FundamentalType fundamentalType) {
