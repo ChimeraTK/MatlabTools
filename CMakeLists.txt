@@ -2,8 +2,8 @@ cmake_minimum_required(VERSION 3.5)
 project(DeviceAccess_Matlab)
 
 set(${PROJECT_NAME}_MAJOR_VERSION 01)
-set(${PROJECT_NAME}_MINOR_VERSION 00)
-set(${PROJECT_NAME}_PATCH_VERSION 01)
+set(${PROJECT_NAME}_MINOR_VERSION 01)
+set(${PROJECT_NAME}_PATCH_VERSION 00)
 
 # Set additional version-specific variables
 include(${CMAKE_SOURCE_DIR}/cmake/set_version_numbers.cmake)
@@ -21,7 +21,7 @@ set(CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}/cmake/Modules;${CMAKE_MODULE_PATH}")
 find_package(Matlab COMPONENTS MX_LIBRARY ENG_LIBRARY REQUIRED)
 
 include(cmake/add_dependency.cmake)
-add_dependency(ChimeraTK-DeviceAccess 01.09 REQUIRED)
+add_dependency(ChimeraTK-DeviceAccess 03.00 REQUIRED)
 
 # C++ standard and other required flags come from DeviceAccess
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${ChimeraTK-DeviceAccess_CXX_FLAGS} -Wall -Wextra -Wshadow -pedantic -Wuninitialized")
