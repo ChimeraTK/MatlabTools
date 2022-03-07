@@ -18,7 +18,6 @@
 #include <vector>
 
 #include <ChimeraTK/BackendFactory.h>
-#include <ChimeraTK/DMapFilesParser.h>
 #include <ChimeraTK/Device.h>
 #include <ChimeraTK/RegisterPath.h>
 #include <ChimeraTK/Utilities.h>
@@ -313,48 +312,53 @@ void getInfo(unsigned int nlhs, mxArray* plhs[], unsigned int nrhs, const mxArra
   if(nrhs > 0) mexWarnMsgTxt("Too many input arguments.");
   if(nlhs > 1) mexErrMsgTxt("Too many output arguments.");
 
-  DMapFilesParser parser(".");
+  //  DMapFilesParser parser(".");
 
-  mwSize dims[2] = {1, parser.getdMapFileSize()};
+  mwSize dims[2] = {1, 1}; //parser.getdMapFileSize()};
   const char* field_names[] = {"name", "device", "firmware", "date", "map"};
   plhs[0] = mxCreateStructArray(2, dims, (sizeof(field_names) / sizeof(*field_names)), field_names);
 
   unsigned int i = 0;
 
-  for(DMapFilesParser::iterator it = parser.begin(); it != parser.end(); ++it, ++i) {
-    mxArray* firmware_value = mxCreateDoubleMatrix(1, 1, mxREAL);
-    *mxGetPr(firmware_value) = 0;
+  //  for(DMapFilesParser::iterator it = parser.begin(); it != parser.end(); ++it, ++i) {
+  //    mxArray* firmware_value = mxCreateDoubleMatrix(1, 1, mxREAL);
+  //    *mxGetPr(firmware_value) = 0;
 
-    std::string date;
+  //    std::string date;
 
-    try {
-      ChimeraTK::setDMapFilePath(it->first.dmapFileName);
-      Device tempDevice;
-      tempDevice.open(it->first.deviceName);
+  //    try {
+  //      ChimeraTK::setDMapFilePath(it->first.dmapFileName);
+  //      Device tempDevice;
+  //      tempDevice.open(it->first.deviceName);
 
-      int firmware = tempDevice.read<int>("BOARD0/WORD_FIRMWARE");
-      *mxGetPr(firmware_value) = firmware;
+  //      int firmware = tempDevice.read<int>("BOARD0/WORD_FIRMWARE");
+  //      *mxGetPr(firmware_value) = firmware;
 
-      int timestamp = tempDevice.read<int>("BOARD0/WORD_TIMESTAMP");
-      date = timestamp;
-    }
-    catch(...) {
-    }
+  //      int timestamp = tempDevice.read<int>("BOARD0/WORD_TIMESTAMP");
+  //      date = timestamp;
+  //    }
+  //    catch(...) {
+  //    }
 
-    mxSetFieldByNumber(plhs[0], i, 0, mxCreateString(it->first.deviceName.c_str()));
-    mxSetFieldByNumber(plhs[0], i, 1, mxCreateString(it->first.uri.c_str()));
-    mxSetFieldByNumber(plhs[0], i, 2, firmware_value);
-    mxSetFieldByNumber(plhs[0], i, 3, mxCreateString(date.c_str()));
-    mxSetFieldByNumber(plhs[0], i, 4, mxCreateString(it->first.mapFileName.c_str()));
-  }
+  //    //    mxSetFieldByNumber(plhs[0], i, 0, mxCreateString(it->first.deviceName.c_str()));
+  //    //    mxSetFieldByNumber(plhs[0], i, 1, mxCreateString(it->first.uri.c_str()));
+  //    //    mxSetFieldByNumber(plhs[0], i, 2, firmware_value);
+  //    //    mxSetFieldByNumber(plhs[0], i, 3, mxCreateString(date.c_str()));
+  //    //    mxSetFieldByNumber(plhs[0], i, 4, mxCreateString(it->first.mapFileName.c_str()));
+  //    mxSetFieldByNumber(plhs[0], i, 0, mxCreateString("FIXME"));
+  //    mxSetFieldByNumber(plhs[0], i, 1, mxCreateString("FIXME"));
+  //    mxSetFieldByNumber(plhs[0], i, 2, firmware_value);
+  //    mxSetFieldByNumber(plhs[0], i, 3, mxCreateString(date.c_str()));
+  //    mxSetFieldByNumber(plhs[0], i, 4, mxCreateString("FIXME"));
+  //  }
 }
 
-std::string getFundamentalTypeString(ChimeraTK::RegisterInfo::FundamentalType fundamentalType) {
-  if(fundamentalType == RegisterInfo::FundamentalType::numeric) return "numeric";
-  if(fundamentalType == RegisterInfo::FundamentalType::string) return "string";
-  if(fundamentalType == RegisterInfo::FundamentalType::boolean) return "boolean";
-  if(fundamentalType == RegisterInfo::FundamentalType::nodata) return "nodata";
-  if(fundamentalType == RegisterInfo::FundamentalType::undefined) return "undefined";
+std::string getFundamentalTypeString(ChimeraTK::DataDescriptor::FundamentalType fundamentalType) {
+  if(fundamentalType == DataDescriptor::FundamentalType::numeric) return "numeric";
+  if(fundamentalType == DataDescriptor::FundamentalType::string) return "string";
+  if(fundamentalType == DataDescriptor::FundamentalType::boolean) return "boolean";
+  if(fundamentalType == DataDescriptor::FundamentalType::nodata) return "nodata";
+  if(fundamentalType == DataDescriptor::FundamentalType::undefined) return "undefined";
   return "unknown";
 }
 
@@ -369,7 +373,7 @@ void getDeviceInfo(unsigned int nlhs, mxArray** plhs, unsigned int nrhs, const m
 
   boost::shared_ptr<Device> device = getDevice(prhs[0]);
 
-  auto& registerCatalogue = device->getRegisterCatalogue();
+  auto registerCatalogue = device->getRegisterCatalogue();
 
   //                    index: 0       1            2            3 4 5
   const char* field_names[] = {
@@ -379,7 +383,7 @@ void getDeviceInfo(unsigned int nlhs, mxArray** plhs, unsigned int nrhs, const m
       registerCatalogue.getNumberOfRegisters(), 1, (sizeof(field_names) / sizeof(*field_names)), field_names);
 
   unsigned int index = 0;
-  for(RegisterInfoMap::const_iterator cit = registerCatalogue.begin(); cit != registerCatalogue.end(); ++cit, ++index) {
+  for(auto cit = registerCatalogue.begin(); cit != registerCatalogue.end(); ++cit, ++index) {
     mxSetFieldByNumber(plhs[0], index, 0, mxCreateString(std::string(cit->getRegisterName()).c_str()));
 
     mxArray* numElements = mxCreateDoubleMatrix(1, 1, mxREAL);
@@ -414,12 +418,12 @@ void getRegisterInfo(unsigned int nlhs, mxArray* plhs[], unsigned int nrhs, cons
   if(!mxIsChar(prhs[2])) mexErrMsgTxt("Invalid " + getOrdinalNumerString(3) + " input argument.");
 
   auto device = getDevice(prhs[0]);
-  auto& registerCatalogue = device->getRegisterCatalogue();
+  auto registerCatalogue = device->getRegisterCatalogue();
 
   RegisterPath moduleName(mxArrayToStdString(prhs[1]));
   RegisterPath registerName(mxArrayToStdString(prhs[2]));
   auto registerInfo = registerCatalogue.getRegister(moduleName / registerName);
-  auto& dataDescriptor = registerInfo->getDataDescriptor();
+  auto& dataDescriptor = registerInfo.getDataDescriptor();
 
   //                    index: 0       1                      2            3 4
   //                    5              6          7
@@ -427,18 +431,18 @@ void getRegisterInfo(unsigned int nlhs, mxArray* plhs[], unsigned int nrhs, cons
       "isIntegral", "isSigned", "description"};
   plhs[0] = mxCreateStructMatrix(1, 1, (sizeof(field_names) / sizeof(*field_names)), field_names);
 
-  mxSetFieldByNumber(plhs[0], 0, 0, mxCreateString(std::string(registerInfo->getRegisterName()).c_str()));
+  mxSetFieldByNumber(plhs[0], 0, 0, mxCreateString(std::string(registerInfo.getRegisterName()).c_str()));
 
   mxArray* numElements = mxCreateDoubleMatrix(1, 1, mxREAL);
-  *mxGetPr(numElements) = registerInfo->getNumberOfElements();
+  *mxGetPr(numElements) = registerInfo.getNumberOfElements();
   mxSetFieldByNumber(plhs[0], 0, 1, numElements);
 
   mxArray* numChannels = mxCreateDoubleMatrix(1, 1, mxREAL);
-  *mxGetPr(numChannels) = registerInfo->getNumberOfChannels();
+  *mxGetPr(numChannels) = registerInfo.getNumberOfChannels();
   mxSetFieldByNumber(plhs[0], 0, 2, numChannels);
 
   mxArray* numDimensions = mxCreateDoubleMatrix(1, 1, mxREAL);
-  *mxGetPr(numDimensions) = registerInfo->getNumberOfDimensions();
+  *mxGetPr(numDimensions) = registerInfo.getNumberOfDimensions();
   mxSetFieldByNumber(plhs[0], 0, 3, numDimensions);
 
   auto fundamentalType = dataDescriptor.fundamentalType();
@@ -447,7 +451,7 @@ void getRegisterInfo(unsigned int nlhs, mxArray* plhs[], unsigned int nrhs, cons
 
   bool isIntegral = false; // default value in case the data type is not numeric
   bool isSigned = false;   // default value in case the data type is not numeric
-  if(fundamentalType == RegisterInfo::FundamentalType::numeric) {
+  if(fundamentalType == DataDescriptor::FundamentalType::numeric) {
     // These operations on the data descriptor are only valid for numeric types.
     // They will throw otherwise.
     isIntegral = dataDescriptor.isIntegral();
@@ -777,10 +781,10 @@ void readRaw(unsigned int nlhs, mxArray* plhs[], unsigned int nrhs, const mxArra
   if(!mxIsChar(prhs[pp_module])) mexErrMsgTxt("Invalid " + getOrdinalNumerString(pp_module) + " input argument.");
   if(!mxIsChar(prhs[pp_register])) mexErrMsgTxt("Invalid " + getOrdinalNumerString(pp_register) + " input argument.");
 
-  if((nrhs > pp_offset) && !mxIsRealScalar(prhs[pp_offset])){
+  if((nrhs > pp_offset) && !mxIsRealScalar(prhs[pp_offset])) {
     mexErrMsgTxt("Invalid " + getOrdinalNumerString(pp_offset) + " input argument.");
   }
-  if((nrhs > pp_elements) && !mxIsPositiveRealScalar(prhs[pp_elements])){
+  if((nrhs > pp_elements) && !mxIsPositiveRealScalar(prhs[pp_elements])) {
     mexErrMsgTxt("Invalid " + getOrdinalNumerString(pp_elements) + " input argument.");
   }
 
