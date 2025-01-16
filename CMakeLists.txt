@@ -16,18 +16,17 @@ endif()
 #from CMake 3.15 which solves linkage problems with Matlab versions >= 2018a. Like this
 #we can use it already with CMake 3.5. Once we don't use Linuxes with old CMake versions
 #any more, the local FindMatlab and this line can be removed.
-set(CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}/cmake/Modules;${CMAKE_SOURCE_DIR}/ChimeraTK-DeviceAccess/cmake/Modules;${CMAKE_MODULE_PATH}")
+set(CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}/cmake/Modules;${CMAKE_MODULE_PATH}")
 
 find_package(Matlab COMPONENTS MX_LIBRARY ENG_LIBRARY REQUIRED)
 
-#find_package(ChimeraTK-DeviceAccess 03.10 REQUIRED)
-set(ENV{PROJECT_BUILDVERSION} $ENV{PROJECT_BUILDVERSION}forMatlab)
-add_subdirectory(ChimeraTK-DeviceAccess)
+include(cmake/add_dependency.cmake)
+add_dependency(ChimeraTK-DeviceAccess 03.00 REQUIRED)
 
-include(${CMAKE_SOURCE_DIR}/cmake/set_default_build_to_release.cmake)
-include(${CMAKE_SOURCE_DIR}/cmake/set_default_flags.cmake)
-
-set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -D__MEX_DEBUG_MODE")
+# C++ standard and other required flags come from DeviceAccess
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${ChimeraTK-DeviceAccess_CXX_FLAGS} -Wall -Wextra -Wshadow -pedantic -Wuninitialized")
+set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -O0 --coverage -D__MEX_DEBUG_MODE")
+SET(CMAKE_INSTALL_RPATH_USE_LINK_PATH TRUE)
 
 configure_file(cmake/version.h.in "${PROJECT_BINARY_DIR}/include/version.h" @ONLY)
 include_directories(${PROJECT_BINARY_DIR}/include)
